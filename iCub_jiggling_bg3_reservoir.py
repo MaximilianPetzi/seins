@@ -18,7 +18,7 @@ setup(num_threads=2)
 
 compile()
 
-
+os.system("rm error_h/*")
 # initialize robot connection
 sys.path.append('../../CPG_lib/MLMPCPG')
 sys.path.append('../../CPG_lib/icubPlot')
@@ -77,7 +77,7 @@ for i in range(0, len(myCont)):
 
 num_goals = 2
 
-num_trials = num_goals*70  # 600
+num_trials = num_goals*30  # 600
 
 error_history = np.zeros(num_trials)
 
@@ -214,4 +214,5 @@ for gol in range(num_goals):
     else:
         errh += error_history[gol:-(len(error_history) % num_goals):num_goals]
 errh /= num_goals
+print("length of each errorhistory: ", len(errh))
 np.save('error_h/'+sim+'error.npy', error_history)
