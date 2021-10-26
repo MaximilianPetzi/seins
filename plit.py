@@ -14,6 +14,7 @@ for i in range(nrt):
     except:
         print("--"+str(i+1)+"error.npy is missing--")
 am=np.array(am)
+nrtries=len(am)
 
 minl=10000000
 for i in range(len(am)):
@@ -41,6 +42,7 @@ Am=np.average(Am,axis=0)
 plt.plot(sliding_av,color=(1,0,0,1),label="sliding avg")
 plt.plot(Am,color="black",linewidth=.4)
 plt.errorbar(x=range(len(sliding_av)),y=sliding_av, yerr=yerr,color=(1,0,0,.2),elinewidth=.5,label="error of sliding avg")
+plt.ylabel("error avg over "+nrtries+" identical tries")
 plt.legend()
 plt.savefig("bilder/plit_temp/this")
 plt.show()
