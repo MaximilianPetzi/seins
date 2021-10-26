@@ -18,7 +18,6 @@ setup(num_threads=2)
 
 compile()
 
-os.system("rm error_h/*")
 # initialize robot connection
 sys.path.append('../../CPG_lib/MLMPCPG')
 sys.path.append('../../CPG_lib/icubPlot')
