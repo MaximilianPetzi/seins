@@ -210,6 +210,6 @@ for t in range(num_trials):
     error_history[t] = error
 
 
-np.save(sim+'error.npy',error_history)
+np.save(error_h/sim+'error.npy',error_history)
 
 

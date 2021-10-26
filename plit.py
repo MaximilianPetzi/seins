@@ -3,13 +3,13 @@ from matplotlib import pyplot as plt
 import matplotlib
 #matplotlib.use("TkAgg")
 import os
-os.system("rm ../bilder/plit_temp/*")
+os.system("rm bilder/plit_temp/*")
 nrt=25
 am = []
 for i in range(nrt):
     print(i+1)
     try:
-        t = np.load("../error_h/"+str(i+1)+'error.npy')
+        t = np.load("error_h/"+str(i+1)+'error.npy')
         am.append(t)
     except:
         print("--"+str(i+1)+"error.npy is missing--")
@@ -42,6 +42,6 @@ plt.plot(sliding_av,color=(1,0,0,1),label="sliding avg")
 plt.plot(Am,color="black",linewidth=.4)
 plt.errorbar(x=range(len(sliding_av)),y=sliding_av, yerr=yerr,color=(1,0,0,.2),elinewidth=.5,label="error of sliding avg")
 plt.legend()
-plt.savefig("../bilder/plit_temp/this")
+plt.savefig("bilder/plit_temp/this")
 plt.show()
 
