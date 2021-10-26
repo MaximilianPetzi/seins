@@ -1,4 +1,4 @@
-num_goals=2
+num_goals=4
 import numpy as np
 from matplotlib import pyplot as plt 
 import matplotlib
@@ -44,6 +44,6 @@ plt.plot(Am,color="black",linewidth=.4)
 plt.errorbar(x=range(len(sliding_av)),y=sliding_av, yerr=yerr,color=(1,0,0,.2),elinewidth=.5,label="error of sliding avg")
 plt.ylabel("error avg over "+str(nrtries)+" identical tries")
 plt.legend()
-plt.savefig("bilder/plit_temp/this")
+plt.savefig("bilder/plit_temp")
 plt.show()
 

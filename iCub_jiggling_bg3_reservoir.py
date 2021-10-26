@@ -1,3 +1,4 @@
+num_goals = 4
 from ANNarchy import *
 from reservoir_bg3 import *
 from kinematic import *
@@ -74,9 +75,9 @@ for i in range(0, len(myCont)):
     myCont[i].fUpdateLocomotionNetwork(myT, angles[i])
 
 
-num_goals = 2
 
-num_trials = num_goals*30  # 600
+
+num_trials = num_goals*300  # 600
 
 error_history = np.zeros(num_trials)
 
