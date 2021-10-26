@@ -1,3 +1,4 @@
+num_goals=2
 import numpy as np
 from matplotlib import pyplot as plt 
 import matplotlib
@@ -32,7 +33,7 @@ for i in range(len(slav[0])):
     slav[:,i]=slav[:,i]+np.sum(Am[:,i:i+siz],axis=1)
 slav=slav/siz
 
-yerr=np.std(slav,axis=0)
+yerr=np.std(slav,axis=0)/(num_goals)**.5
 print("AAAAAA",np.shape(slav))
 sliding_av=np.average(slav,axis=0)
 Am=np.average(Am,axis=0)

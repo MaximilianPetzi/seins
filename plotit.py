@@ -1,12 +1,12 @@
 #almost original version
 import numpy as np
 from matplotlib import pyplot as plt 
-nrt=25
+nrt=600
 am = np.zeros(nrt)
-nrs=2
+nrs=25
 a = np.zeros((nrs,nrt))
 for i in range(nrs):
-    t = np.load(str(i+1)+'error.npy')
+    t = np.load('error_h/'+str(i+1)+'error.npy')
     am += t
     a[i] = t
 am = am/nrs
