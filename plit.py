@@ -45,12 +45,12 @@ aAm=np.average(Am,axis=0)
 
 
 #plt.plot(sliding_av,color=(1,0,0,1),label="sliding avg")
-plt.plot(np.array(Am).T)
-plt.figure()
+
 plt.plot(aAm,color="black",linewidth=.4)
 plt.errorbar(x=range(len(aAm)),y=aAm, yerr=yerr,color=(1,0,0,.2),elinewidth=.5)
 plt.ylabel("error avg over "+str(nrtries)+" identical tries")
 plt.legend()
-plt.savefig("bilder/plit_temp/this")
+plitstring="lasterr"+str(round(lasterr,3))+"+-"+str(round(lasterrerr,3))
+plt.savefig("bilder/plit_temp/this"+plitstring+".png")
 plt.show()
 

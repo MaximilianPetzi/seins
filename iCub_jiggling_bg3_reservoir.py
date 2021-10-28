@@ -217,3 +217,6 @@ for gol in range(num_goals):
 errh /= num_goals
 print("length of each errorhistory: ", len(errh))
 np.save('error_h/'+sim+'error.npy', errh)
+
+#plitstr="goals"+num_goals
+#np.save("error_h/plitstr",plitstr)
