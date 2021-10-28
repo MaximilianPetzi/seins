@@ -1,4 +1,4 @@
-num_goals = 4
+
 from ANNarchy import *
 from reservoir_bg3 import *
 from kinematic import *
@@ -13,6 +13,8 @@ import time
 import numpy as np
 
 sim = sys.argv[1]
+num_goals=int(sys.argv[2])
+num_trials = num_goals*300  # 600
 print(sim)
 
 setup(num_threads=2)
@@ -76,8 +78,6 @@ for i in range(0, len(myCont)):
 
 
 
-
-num_trials = num_goals*300  # 600
 
 error_history = np.zeros(num_trials)
 
@@ -206,6 +206,7 @@ for t in range(num_trials):
                                            num_goals] + (1. - alpha) * error
 
     error_history[t] = error
+print(np.shape(error_history))
 for gol in range(num_goals):
     if gol == 0:
         errh = np.zeros(len(error_history[gol:-num_goals:num_goals]))
@@ -215,4 +216,4 @@ for gol in range(num_goals):
         errh += error_history[gol:-(len(error_history) % num_goals):num_goals]
 errh /= num_goals
 print("length of each errorhistory: ", len(errh))
-np.save('error_h/'+sim+'error.npy', error_history)
+np.save('error_h/'+sim+'error.npy', errh)
