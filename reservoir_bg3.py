@@ -1,3 +1,4 @@
+N=400
 from ANNarchy import *
 import matplotlib.pyplot as plt
 import os.path
@@ -65,7 +66,7 @@ inp.r = 0.0
 
 
 # Recurrent population
-N = 400
+
 pop = Population(N, neuron)
 pop[1].constant = 1.0
 pop[10].constant = 1.0
