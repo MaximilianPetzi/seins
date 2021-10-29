@@ -1,4 +1,4 @@
-N=400
+N=1600
 from ANNarchy import *
 import matplotlib.pyplot as plt
 import os.path
