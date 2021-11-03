@@ -14,7 +14,7 @@ import numpy as np
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals*150 # 600
+num_trials = num_goals*300 # 600
 print("num_trials=",num_trials)
 print(sim)
 
