@@ -2,5 +2,5 @@ rm error_h/*
 for i in {1..3}
 do
 sleep 10
-python3 iCub_jiggling_bg3_reservoir.py $i 8&
+python3 jiggling.py $i 2&
 done

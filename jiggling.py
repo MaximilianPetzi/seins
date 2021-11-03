@@ -1,6 +1,6 @@
 
 from ANNarchy import *
-from reservoir_bg3 import *
+from reservoir import *
 from kinematic import *
 import CPG_lib.parameter as params
 from CPG_lib.MLMPCPG.MLMPCPG import *
@@ -14,7 +14,7 @@ import numpy as np
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals*300 # 600
+num_trials = num_goals*150 # 600
 print("num_trials=",num_trials)
 print(sim)
 
@@ -81,7 +81,7 @@ for i in range(0, len(myCont)):
 
 
 error_history = np.zeros(num_trials)
-
+g_history=np.zeros(num_trials)
 
 initial_position = wrist_position(np.radians(angles[joints]))[0:3]
 
@@ -190,6 +190,9 @@ for t in range(num_trials):
 
     distance = np.linalg.norm(final_pos-current_goal)
     error = distance
+    weightlist68=np.array(Wrec.w)
+    weightlist69=np.reshape(weightlist68,(N**2))
+    ghat=np.std(weightlist69)*np.sqrt(N)
 
     if(t > 10):
         # Apply the learning rule
@@ -207,17 +210,22 @@ for t in range(num_trials):
                                            num_goals] + (1. - alpha) * error
 
     error_history[t] = error
+    g_history[t] = ghat
 print(np.shape(error_history))
 for gol in range(num_goals):
     if gol == 0:
         errh = np.zeros(len(error_history[gol:-num_goals:num_goals]))
+        gh=np.zeros(len(g_history[gol:-num_goals:num_goals]))
     if len(error_history) % num_goals==0:
         errh += error_history[gol:-num_goals:num_goals]
+        gh += g_history[gol:-num_goals:num_goals]
     else:
         errh += error_history[gol:-(len(error_history) % num_goals):num_goals]
+        gh += g_history[gol:-(len(g_history) % num_goals):num_goals]
 errh /= num_goals
+gh/= num_goals
 print("length of each errorhistory: ", len(errh))
-np.save('error_h/'+sim+'error.npy', errh)
+np.save('error_h/'+sim+'error.npy', [errh,gh])
 
 #plitstr="goals"+num_goals
 #np.save("error_h/plitstr",plitstr)
