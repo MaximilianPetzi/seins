@@ -81,7 +81,7 @@ Wi.connect_all_to_all(weights=Uniform(-0.2, 0.2))
 
 
 # Recurrent weights
-g = 1.0 #1.0
+g = 1.01 #1.0
 Wrec = Projection(pop,pop,'exc',synapse)  #pop[0:(N-28)], pop, 'exc', synapse)
 #Wrec.connect_from_file(filename='Wrec.data')
 Wrec.connect_all_to_all(weights=Normal(0., g/np.sqrt(N)), allow_self_connections=True)
