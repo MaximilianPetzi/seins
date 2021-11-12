@@ -3,15 +3,15 @@ from matplotlib import pyplot as plt
 import matplotlib
 #matplotlib.use("TkAgg")
 import os
-import pandas as pd
+#import pandas as pd
 os.system("rm bilder/plit_temp/*")
 nrt=25
 aAms=[]
 yerrs=[]
-for tracker in range(2):
+for tracker in range(3):
     am = []
     for i in range(nrt):
-        print(i+1)
+        #print(i+1)
         try:
             trackers = np.load("error_h/"+str(i+1)+'error.npy')
             t=trackers[tracker]
@@ -37,7 +37,7 @@ for tracker in range(2):
         lasterrerr=np.std(lasterrs)/np.shape(lasterrs)[0]**.5
         print("lasterr=",lasterr, "+/-",lasterrerr)
         print("lasterrs",lasterrs)
-
+    
     yerr=np.std(Am,axis=0)/nrtries**.5
     aAm=np.average(Am,axis=0)
 
@@ -60,6 +60,11 @@ plt.figure()
 plt.plot(aAms[1],color="orange",linewidth=.4)
 plt.errorbar(x=range(len(aAms[1])),y=aAms[1], yerr=yerrs[1],color=(1,.5,0,.2),elinewidth=.5)
 plt.ylabel("G avg over "+str(nrtries)+" identical tries")
+plt.savefig("bilder/plit_temp/that"+plitstring+".png")
+plt.figure()
+plt.plot(aAms[2],color="green",linewidth=.4)
+plt.errorbar(x=range(len(aAms[2])),y=aAms[2], yerr=yerrs[1],color=(1,.5,0,.2),elinewidth=.5)
+plt.ylabel("eta_factor avg over "+str(nrtries)+" identical tries")
 plt.savefig("bilder/plit_temp/that"+plitstring+".png")
 plt.show()
 

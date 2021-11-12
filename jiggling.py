@@ -11,10 +11,11 @@ import importlib
 import sys
 import time
 import numpy as np
+from sklearn.decomposition import PCA
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals*300 # 600
+num_trials = num_goals*40 # 600
 print("num_trials=",num_trials)
 print(sim)
 
@@ -82,7 +83,7 @@ for i in range(0, len(myCont)):
 
 error_history = np.zeros(num_trials)
 g_history=np.zeros(num_trials)
-
+etaf_history=np.zeros(num_trials)
 initial_position = wrist_position(np.radians(angles[joints]))[0:3]
 
 
@@ -151,7 +152,8 @@ goal_history = np.zeros((num_goals, 3))
 for i in range(num_goals):
     goal_history[i] = random_goal(initial_position)
 
-
+g_growth=1
+Wrec.eta=1
 for t in range(num_trials):
     print('trial '+str(t))
     current_goal = goal_history[t % num_goals]
@@ -167,10 +169,34 @@ for t in range(num_trials):
     simulate(200)
 
     inp.r = 0.0
-
+    #hier:
     simulate(200)
 
     rec = m.get()
+    #hier:
+    #plt.plot(rec['r'][:,12:19])
+    #plt.show()
+    pcaplot=True
+    if pcaplot and t%(num_goals*10)==0:
+        print("trial nr",t/num_goals)
+        pca = PCA(n_components=10)
+        pcacomps=pca.fit_transform(rec['r'])
+        
+        print(pca.explained_variance_ratio_)
+        print(pca.singular_values_)
+        print(np.shape(pcacomps))
+        plt.figure()
+        plt.subplot(2,1,1)
+        plt.plot(pcacomps[:,0],pcacomps[:,1])
+        plt.xlabel("1st component")
+        plt.ylabel("2nd component")
+        plt.subplot(2,1,2)
+        plt.plot(pca.explained_variance_ratio_)
+        plt.xlabel("Component number")
+        plt.ylabel("Explained variance")
+        plt.show()
+    
+    
 
     output = rec['r'][-200:, -24:]
     output = np.mean(output, axis=0)
@@ -192,13 +218,25 @@ for t in range(num_trials):
     error = distance
     weightlist68=np.array(Wrec.w)
     weightlist69=np.reshape(weightlist68,(N**2))
+    
     ghat=np.std(weightlist69)*np.sqrt(N)
+    #manuel g steuern
+    #print(ghat)
+    #if (1+t)%(40*num_goals)==0:
+    #    plt.plot(np.convolve(error_history,np.ones(8)))
+    #    plt.plot(g_history)
+    #    plt.show()
+    #    g_growth=float(input("growth-factor=?"))
+    #wrecc=np.array(Wrec.w)
+    #wrecc*=g_growth
+    #Wrec.w=(wrecc).tolist()
 
-    if(t > 10):
+    if(t > 6*num_goals):
         # Apply the learning rule
         Wrec.learning_phase = 1.0
         Wrec.error = error
         Wrec.mean_error = R_mean[t % num_goals]
+        Wrec.mean_mean_error = R_mean_mean[t % num_goals]
         # Learn for one step
         step()
         # Reset the traces
@@ -208,24 +246,32 @@ for t in range(num_trials):
 
     R_mean[t % num_goals] = alpha * R_mean[t %
                                            num_goals] + (1. - alpha) * error
-
+    R_mean_mean[t % num_goals] = alpha * R_mean_mean[t %
+                                           num_goals] + (1. - alpha) * R_mean[t % num_goals]
+                                        
     error_history[t] = error
     g_history[t] = ghat
+    etaf_history[t]= Wrec.eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
+    #print(R_mean[t % num_goals]-R_mean_mean[t % num_goals],Wrec.eta)  
 print(np.shape(error_history))
 for gol in range(num_goals):
     if gol == 0:
         errh = np.zeros(len(error_history[gol:-num_goals:num_goals]))
         gh=np.zeros(len(g_history[gol:-num_goals:num_goals]))
+        etafh=np.zeros(len(etaf_history[gol:-num_goals:num_goals]))
     if len(error_history) % num_goals==0:
         errh += error_history[gol:-num_goals:num_goals]
         gh += g_history[gol:-num_goals:num_goals]
+        etafh += etaf_history[gol:-num_goals:num_goals]
     else:
         errh += error_history[gol:-(len(error_history) % num_goals):num_goals]
         gh += g_history[gol:-(len(g_history) % num_goals):num_goals]
+        etafh += etaf_history[gol:-(len(etaf_history) % num_goals):num_goals]
 errh /= num_goals
 gh/= num_goals
+etafh/=num_goals
 print("length of each errorhistory: ", len(errh))
-np.save('error_h/'+sim+'error.npy', [errh,gh])
+np.save('error_h/'+sim+'error.npy', [errh,gh,etafh])
 
 #plitstr="goals"+num_goals
 #np.save("error_h/plitstr",plitstr)

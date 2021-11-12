@@ -6,6 +6,7 @@ from scipy.stats import multivariate_normal
 import pickle
 
 neuron = Neuron(
+    #hier
     parameters = """
         tau = 30.0 : population # Time constant
         constant = 0.0 # The four first neurons have constant rates
@@ -35,11 +36,12 @@ neuron = Neuron(
 #eta * trace * (mean_error) * (error - mean_error)
 synapse = Synapse(
     parameters="""
-        eta = 1.0: projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
+        #eta = 1.0: projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
         learning_phase = 0.0 : projection # Flag to allow learning only at the end of a trial
         error = 0.0 : projection # Reward received
         mean_error = 0.0 : projection # Mean Reward received
-        max_weight_change = 0.0005 : projection # Clip the weight changes 0.0003/0.0005
+        mean_mean_error = 0.0 : projection
+        max_weight_change = 0.0005 : projection # Clip the weight changes 0.0003/0.0005sss
     """,
     equations="""
         # Trace
@@ -48,9 +50,28 @@ synapse = Synapse(
                  else:
                     0.0
 
+        # effective_eta = if learning_phase > 0.5:
+        #     if -eta*(mean_error-mean_mean_error)>eta*0.1:
+        #     -eta*(mean_error-mean_mean_error)
+        #     else:
+        #         eta*0.1
+        #     else:
+        #         0.5*eta:projection
+        eta_lr=0.1:projection
+        eta += if learning_phase > 0.5:
+            -eta_lr*(mean_error-mean_mean_error)
+            else:
+                0.0:projection
+
+        effective_eta = if learning_phase > 0.5:
+            eta
+            else:
+                0.0:projection
+
+
         # Weight update only at the end of the trial
         delta_w = if learning_phase > 0.5:
-                eta * trace * (mean_error) * (error - mean_error)
+                1 * trace * (mean_error) * (error - mean_error)
              else:
                  0.0 : min=-max_weight_change, max=max_weight_change
         w -= if learning_phase > 0.5:
@@ -81,6 +102,7 @@ Wi.connect_all_to_all(weights=Uniform(-0.2, 0.2))
 
 
 # Recurrent weights
+#hier
 g = 1.0 #1.0
 Wrec = Projection(pop,pop,'exc',synapse)  #pop[0:(N-28)], pop, 'exc', synapse)
 #Wrec.connect_from_file(filename='Wrec.data')
@@ -94,8 +116,9 @@ Wrec.connect_all_to_all(weights=Normal(0., g/np.sqrt(N)), allow_self_connections
 
 # Compute the mean reward per trial
 R_mean = np.zeros(100)
+R_mean_mean=np.zeros(100)
 alpha = 0.33 #0.75 0.33 
-
+alpha2=0.01
 
 m = Monitor(pop,['r'])
 #mp = Monitor(pop,['r'])

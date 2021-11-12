@@ -19,7 +19,7 @@ extern std::vector<std::mt19937> rng;
 // proj1: pop1 -> pop1 with target exc
 /////////////////////////////////////////////////////////////////////////////
 struct ProjStruct1 : LILMatrix<int> {
-    ProjStruct1() : LILMatrix<int>( 200, 200) {
+    ProjStruct1() : LILMatrix<int>( 800, 800) {
     }
 
 
@@ -56,9 +56,6 @@ struct ProjStruct1 : LILMatrix<int> {
 
 
 
-    // Global parameter eta
-    double  eta ;
-
     // Global parameter learning_phase
     double  learning_phase ;
 
@@ -68,11 +65,23 @@ struct ProjStruct1 : LILMatrix<int> {
     // Global parameter mean_error
     double  mean_error ;
 
+    // Global parameter mean_mean_error
+    double  mean_mean_error ;
+
     // Global parameter max_weight_change
     double  max_weight_change ;
 
     // Local parameter trace
     std::vector< std::vector<double > > trace;
+
+    // Global parameter eta_lr
+    double  eta_lr ;
+
+    // Global parameter eta
+    double  eta ;
+
+    // Global parameter effective_eta
+    double  effective_eta ;
 
     // Local parameter delta_w
     std::vector< std::vector<double > > delta_w;
@@ -97,9 +106,6 @@ struct ProjStruct1 : LILMatrix<int> {
 
 
 
-        // Global parameter eta
-        eta = 0.0;
-
         // Global parameter learning_phase
         learning_phase = 0.0;
 
@@ -109,11 +115,23 @@ struct ProjStruct1 : LILMatrix<int> {
         // Global parameter mean_error
         mean_error = 0.0;
 
+        // Global parameter mean_mean_error
+        mean_mean_error = 0.0;
+
         // Global parameter max_weight_change
         max_weight_change = 0.0;
 
         // Local variable trace
         trace = init_matrix_variable<double>(static_cast<double>(0.0));
+
+        // Global variable eta_lr
+        eta_lr = 0.0;
+
+        // Global variable eta
+        eta = 0.0;
+
+        // Global variable effective_eta
+        effective_eta = 0.0;
 
         // Local variable delta_w
         delta_w = init_matrix_variable<double>(static_cast<double>(0.0));
@@ -177,6 +195,18 @@ struct ProjStruct1 : LILMatrix<int> {
         if(_transmission && _update && pop1._active && ( (t - _update_offset)%_update_period == 0L) ){
             // Global variables
 
+                // eta_lr=0.1
+                eta_lr = 0.10000000000000001;
+
+
+                // eta += if learning_phase > 0.5: -eta_lr*(mean_error-mean_mean_error) else: 0.0
+                eta += (learning_phase > 0.5 ? (-eta_lr)*(mean_error - mean_mean_error) : 0.0);
+
+
+                // effective_eta = if learning_phase > 0.5: eta else: 0.0
+                effective_eta = (learning_phase > 0.5 ? eta : 0.0);
+
+
             // Local variables
 
             #pragma omp for private(rk_post, rk_pre) firstprivate(dt)
@@ -192,8 +222,8 @@ struct ProjStruct1 : LILMatrix<int> {
                     trace[i][j] += (learning_phase < 0.5 ? power(pop1.delta_x[post_rank[i]]*pop1.rprev[pre_rank[i][j]], 3) : 0.0);
 
 
-                    // delta_w = if learning_phase > 0.5: eta * trace * (mean_error) * (error - mean_error) else: 0.0
-                    delta_w[i][j] = (learning_phase > 0.5 ? eta*mean_error*trace[i][j]*(error - mean_error) : 0.0);
+                    // delta_w = if learning_phase > 0.5: 1 * trace * (mean_error) * (error - mean_error) else: 0.0
+                    delta_w[i][j] = (learning_phase > 0.5 ? mean_error*trace[i][j]*(error - mean_error) : 0.0);
                     if(delta_w[i][j] < -max_weight_change)
                         delta_w[i][j] = -max_weight_change;
                     if(delta_w[i][j] > max_weight_change)
@@ -367,10 +397,6 @@ struct ProjStruct1 : LILMatrix<int> {
 
     double get_global_attribute(std::string name) {
 
-        if ( name.compare("eta") == 0 ) {
-            return eta;
-        }
-
         if ( name.compare("learning_phase") == 0 ) {
             return learning_phase;
         }
@@ -383,8 +409,24 @@ struct ProjStruct1 : LILMatrix<int> {
             return mean_error;
         }
 
+        if ( name.compare("mean_mean_error") == 0 ) {
+            return mean_mean_error;
+        }
+
         if ( name.compare("max_weight_change") == 0 ) {
             return max_weight_change;
+        }
+
+        if ( name.compare("eta_lr") == 0 ) {
+            return eta_lr;
+        }
+
+        if ( name.compare("eta") == 0 ) {
+            return eta;
+        }
+
+        if ( name.compare("effective_eta") == 0 ) {
+            return effective_eta;
         }
 
 
@@ -394,11 +436,6 @@ struct ProjStruct1 : LILMatrix<int> {
     }
 
     void set_global_attribute(std::string name, double value) {
-
-        if ( name.compare("eta") == 0 ) {
-            eta = value;
-
-        }
 
         if ( name.compare("learning_phase") == 0 ) {
             learning_phase = value;
@@ -415,8 +452,28 @@ struct ProjStruct1 : LILMatrix<int> {
 
         }
 
+        if ( name.compare("mean_mean_error") == 0 ) {
+            mean_mean_error = value;
+
+        }
+
         if ( name.compare("max_weight_change") == 0 ) {
             max_weight_change = value;
+
+        }
+
+        if ( name.compare("eta_lr") == 0 ) {
+            eta_lr = value;
+
+        }
+
+        if ( name.compare("eta") == 0 ) {
+            eta = value;
+
+        }
+
+        if ( name.compare("effective_eta") == 0 ) {
+            effective_eta = value;
 
         }
 
@@ -436,6 +493,12 @@ struct ProjStruct1 : LILMatrix<int> {
         size_in_bytes += sizeof(double) * trace.capacity();
         for(auto it = trace.begin(); it != trace.end(); it++)
             size_in_bytes += (it->capacity()) * sizeof(double);
+        // global variable eta_lr
+        size_in_bytes += sizeof(double);	// eta_lr
+        // global variable eta
+        size_in_bytes += sizeof(double);	// eta
+        // global variable effective_eta
+        size_in_bytes += sizeof(double);	// effective_eta
         // local variable delta_w
         size_in_bytes += sizeof(double) * delta_w.capacity();
         for(auto it = delta_w.begin(); it != delta_w.end(); it++)
@@ -444,14 +507,14 @@ struct ProjStruct1 : LILMatrix<int> {
         size_in_bytes += sizeof(double) * w.capacity();
         for(auto it = w.begin(); it != w.end(); it++)
             size_in_bytes += (it->capacity()) * sizeof(double);
-        // global parameter eta
-        size_in_bytes += sizeof(double);	// eta
         // global parameter learning_phase
         size_in_bytes += sizeof(double);	// learning_phase
         // global parameter error
         size_in_bytes += sizeof(double);	// error
         // global parameter mean_error
         size_in_bytes += sizeof(double);	// mean_error
+        // global parameter mean_mean_error
+        size_in_bytes += sizeof(double);	// mean_mean_error
         // global parameter max_weight_change
         size_in_bytes += sizeof(double);	// max_weight_change
 
