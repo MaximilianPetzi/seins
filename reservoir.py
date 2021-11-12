@@ -57,7 +57,7 @@ synapse = Synapse(
         #         eta*0.1
         #     else:
         #         0.5*eta:projection
-        eta_lr=0.1:projection
+        eta_lr=0.0:projection
         eta += if learning_phase > 0.5:
             -eta_lr*(mean_error-mean_mean_error)
             else:
@@ -71,7 +71,7 @@ synapse = Synapse(
 
         # Weight update only at the end of the trial
         delta_w = if learning_phase > 0.5:
-                1 * trace * (mean_error) * (error - mean_error)
+                effective_eta * trace * (mean_error) * (error - mean_error)
              else:
                  0.0 : min=-max_weight_change, max=max_weight_change
         w -= if learning_phase > 0.5:

@@ -15,7 +15,7 @@ from sklearn.decomposition import PCA
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals*40 # 600
+num_trials = num_goals*100 # 600
 print("num_trials=",num_trials)
 print(sim)
 
@@ -173,11 +173,18 @@ for t in range(num_trials):
     simulate(200)
 
     rec = m.get()
+    
+
+    output = rec['r'][-200:, -24:]
+
+    
     #hier:
     #plt.plot(rec['r'][:,12:19])
     #plt.show()
-    pcaplot=True
+    pcaplot=False
     if pcaplot and t%(num_goals*10)==0:
+        simulate(2000)
+        rec = m.get()
         print("trial nr",t/num_goals)
         pca = PCA(n_components=10)
         pcacomps=pca.fit_transform(rec['r'])
@@ -188,6 +195,7 @@ for t in range(num_trials):
         plt.figure()
         plt.subplot(2,1,1)
         plt.plot(pcacomps[:,0],pcacomps[:,1])
+        plt.plot([pcacomps[0,0],pcacomps[0,0]+0.0001],[pcacomps[0,1],pcacomps[0,1]],linewidth=10)
         plt.xlabel("1st component")
         plt.ylabel("2nd component")
         plt.subplot(2,1,2)
@@ -195,10 +203,8 @@ for t in range(num_trials):
         plt.xlabel("Component number")
         plt.ylabel("Explained variance")
         plt.show()
-    
-    
 
-    output = rec['r'][-200:, -24:]
+
     output = np.mean(output, axis=0)
 
     current_parms = np.zeros((4, 6))
@@ -243,6 +249,7 @@ for t in range(num_trials):
         Wrec.learning_phase = 0.0
         Wrec.trace = 0.0
         _ = m.get()
+
 
     R_mean[t % num_goals] = alpha * R_mean[t %
                                            num_goals] + (1. - alpha) * error
