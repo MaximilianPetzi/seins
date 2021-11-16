@@ -195,8 +195,8 @@ struct ProjStruct1 : LILMatrix<int> {
         if(_transmission && _update && pop1._active && ( (t - _update_offset)%_update_period == 0L) ){
             // Global variables
 
-                // eta_lr=0.1
-                eta_lr = 0.10000000000000001;
+                // eta_lr=0.0
+                eta_lr = 0.0;
 
 
                 // eta += if learning_phase > 0.5: -eta_lr*(mean_error-mean_mean_error) else: 0.0
@@ -222,8 +222,8 @@ struct ProjStruct1 : LILMatrix<int> {
                     trace[i][j] += (learning_phase < 0.5 ? power(pop1.delta_x[post_rank[i]]*pop1.rprev[pre_rank[i][j]], 3) : 0.0);
 
 
-                    // delta_w = if learning_phase > 0.5: 1 * trace * (mean_error) * (error - mean_error) else: 0.0
-                    delta_w[i][j] = (learning_phase > 0.5 ? mean_error*trace[i][j]*(error - mean_error) : 0.0);
+                    // delta_w = if learning_phase > 0.5: effective_eta * trace * (mean_error) * (error - mean_error) else: 0.0
+                    delta_w[i][j] = (learning_phase > 0.5 ? effective_eta*mean_error*trace[i][j]*(error - mean_error) : 0.0);
                     if(delta_w[i][j] < -max_weight_change)
                         delta_w[i][j] = -max_weight_change;
                     if(delta_w[i][j] > max_weight_change)

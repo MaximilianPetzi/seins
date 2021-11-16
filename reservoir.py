@@ -41,7 +41,7 @@ synapse = Synapse(
         error = 0.0 : projection # Reward received
         mean_error = 0.0 : projection # Mean Reward received
         mean_mean_error = 0.0 : projection
-        max_weight_change = 0.0005 : projection # Clip the weight changes 0.0003/0.0005sss
+        max_weight_change = 0.0005 : projection # Clip the weight changes 0.0003/0.0005
     """,
     equations="""
         # Trace
