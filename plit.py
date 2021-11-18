@@ -65,6 +65,6 @@ plt.figure()
 plt.plot(aAms[2],color="green",linewidth=.4)
 plt.errorbar(x=range(len(aAms[2])),y=aAms[2], yerr=yerrs[1],color=(1,.5,0,.2),elinewidth=.5)
 plt.ylabel("eta_factor avg over "+str(nrtries)+" identical tries")
-plt.savefig("bilder/plit_temp/that"+plitstring+".png")
+plt.savefig("bilder/plit_temp/thot"+plitstring+".png")
 plt.show()
 

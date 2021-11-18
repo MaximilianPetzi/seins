@@ -16,7 +16,7 @@ import matplotlib.cm as cm
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals*34 # 600
+num_trials = num_goals* 34 #34 für pca e.g.
 print("num_trials=",num_trials)
 
 print(sim)
@@ -252,7 +252,7 @@ for t in range(num_trials):
         Wrec.mean_error = R_mean[t % num_goals]
         Wrec.mean_mean_error = R_mean_mean[t % num_goals]
         
-        eta_lr=0.01
+        eta_lr=0.3
         Wrec.effective_eta += -eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)
         # Learn for one step
         step()
