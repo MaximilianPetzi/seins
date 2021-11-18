@@ -579,6 +579,9 @@ protected:
         }
         post_indices.clear();
 
+        this->effective_eta = std::vector< double >();
+        this->record_effective_eta = false;
+
         this->learning_phase = std::vector< double >();
         this->record_learning_phase = false;
 
@@ -596,15 +599,6 @@ protected:
 
         this->trace = std::vector< std::vector< std::vector< double > > >();
         this->record_trace = false;
-
-        this->eta_lr = std::vector< double >();
-        this->record_eta_lr = false;
-
-        this->eta = std::vector< double >();
-        this->record_eta = false;
-
-        this->effective_eta = std::vector< double >();
-        this->record_effective_eta = false;
 
         this->delta_w = std::vector< std::vector< std::vector< double > > >();
         this->record_delta_w = false;
@@ -634,6 +628,10 @@ public:
 
     void record() {
 
+        if(this->record_effective_eta && ( (t - this->offset_) % this->period_ == this->period_offset_ )){
+            this->effective_eta.push_back(proj1.effective_eta);
+        }
+
         if(this->record_learning_phase && ( (t - this->offset_) % this->period_ == this->period_offset_ )){
             this->learning_phase.push_back(proj1.learning_phase);
         }
@@ -661,18 +659,6 @@ public:
             }
             this->trace.push_back(tmp);
             tmp.clear();
-        }
-
-        if(this->record_eta_lr && ( (t - this->offset_) % this->period_ == this->period_offset_ )){
-            this->eta_lr.push_back(proj1.eta_lr);
-        }
-
-        if(this->record_eta && ( (t - this->offset_) % this->period_ == this->period_offset_ )){
-            this->eta.push_back(proj1.eta);
-        }
-
-        if(this->record_effective_eta && ( (t - this->offset_) % this->period_ == this->period_offset_ )){
-            this->effective_eta.push_back(proj1.effective_eta);
         }
 
         if(this->record_delta_w && ( (t - this->offset_) % this->period_ == this->period_offset_ )){
@@ -706,6 +692,10 @@ public:
     }
 
 
+    // Global variable effective_eta
+    std::vector< double > effective_eta ;
+    bool record_effective_eta ;
+
     // Global variable learning_phase
     std::vector< double > learning_phase ;
     bool record_learning_phase ;
@@ -729,18 +719,6 @@ public:
     // Local variable trace
     std::vector< std::vector< std::vector< double > > > trace ;
     bool record_trace ;
-
-    // Global variable eta_lr
-    std::vector< double > eta_lr ;
-    bool record_eta_lr ;
-
-    // Global variable eta
-    std::vector< double > eta ;
-    bool record_eta ;
-
-    // Global variable effective_eta
-    std::vector< double > effective_eta ;
-    bool record_effective_eta ;
 
     // Local variable delta_w
     std::vector< std::vector< std::vector< double > > > delta_w ;

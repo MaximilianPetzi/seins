@@ -12,11 +12,13 @@ import sys
 import time
 import numpy as np
 from sklearn.decomposition import PCA
+import matplotlib.cm as cm
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals*100 # 600
+num_trials = num_goals*34 # 600
 print("num_trials=",num_trials)
+
 print(sim)
 
 setup(num_threads=2)
@@ -153,7 +155,8 @@ for i in range(num_goals):
     goal_history[i] = random_goal(initial_position)
 
 g_growth=1
-Wrec.eta=1
+#Wrec.effectvie_eta=1.0
+
 for t in range(num_trials):
     print('trial '+str(t))
     current_goal = goal_history[t % num_goals]
@@ -181,28 +184,33 @@ for t in range(num_trials):
     #hier:
     #plt.plot(rec['r'][:,12:19])
     #plt.show()
-    pcaplot=False
-    if pcaplot and t%(num_goals*10)==0:
-        simulate(2000)
-        rec = m.get()
-        print("trial nr",t/num_goals)
+    pcamin=30*8
+    if t==pcamin:
         pca = PCA(n_components=10)
+    pcaplot=True
+    if pcaplot and t>pcamin:#%(num_goals*10)==0:
+        coloridx=(t%num_goals)/(num_goals-1)
+        #simulate(2000)
+        #rec = m.get()
+        print("trial nr",t/num_goals)
+        
         pcacomps=pca.fit_transform(rec['r'])
         
         print(pca.explained_variance_ratio_)
         print(pca.singular_values_)
         print(np.shape(pcacomps))
-        plt.figure()
+        #plt.figure()
         plt.subplot(2,1,1)
-        plt.plot(pcacomps[:,0],pcacomps[:,1])
-        plt.plot([pcacomps[0,0],pcacomps[0,0]+0.0001],[pcacomps[0,1],pcacomps[0,1]],linewidth=10)
+        plt.plot(pcacomps[:,0],pcacomps[:,1],color=cm.rainbow(coloridx),linewidth=.5)
+        plt.scatter([pcacomps[0,0]],[pcacomps[0,1]],color=cm.rainbow(coloridx))
         plt.xlabel("1st component")
         plt.ylabel("2nd component")
+        plt.title("from trial nr. "+str(pcamin))
         plt.subplot(2,1,2)
         plt.plot(pca.explained_variance_ratio_)
         plt.xlabel("Component number")
         plt.ylabel("Explained variance")
-        plt.show()
+        #plt.show()
 
 
     output = np.mean(output, axis=0)
@@ -243,6 +251,9 @@ for t in range(num_trials):
         Wrec.error = error
         Wrec.mean_error = R_mean[t % num_goals]
         Wrec.mean_mean_error = R_mean_mean[t % num_goals]
+        
+        eta_lr=0.01
+        Wrec.effective_eta += -eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)
         # Learn for one step
         step()
         # Reset the traces
@@ -258,7 +269,7 @@ for t in range(num_trials):
                                         
     error_history[t] = error
     g_history[t] = ghat
-    etaf_history[t]= Wrec.eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
+    etaf_history[t]= Wrec.effective_eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
     #print(R_mean[t % num_goals]-R_mean_mean[t % num_goals],Wrec.eta)  
 print(np.shape(error_history))
 for gol in range(num_goals):
@@ -282,3 +293,5 @@ np.save('error_h/'+sim+'error.npy', [errh,gh,etafh])
 
 #plitstr="goals"+num_goals
 #np.save("error_h/plitstr",plitstr)
+print("last line:")
+plt.show()

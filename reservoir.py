@@ -36,7 +36,7 @@ neuron = Neuron(
 #eta * trace * (mean_error) * (error - mean_error)
 synapse = Synapse(
     parameters="""
-        #eta = 1.0: projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
+        effective_eta = 1.0: projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
         learning_phase = 0.0 : projection # Flag to allow learning only at the end of a trial
         error = 0.0 : projection # Reward received
         mean_error = 0.0 : projection # Mean Reward received
@@ -57,17 +57,9 @@ synapse = Synapse(
         #         eta*0.1
         #     else:
         #         0.5*eta:projection
-        eta_lr=0.0:projection
-        eta += if learning_phase > 0.5:
-            -eta_lr*(mean_error-mean_mean_error)
-            else:
-                0.0:projection
+        
 
-        effective_eta = if learning_phase > 0.5:
-            eta
-            else:
-                0.0:projection
-
+        
 
         # Weight update only at the end of the trial
         delta_w = if learning_phase > 0.5:

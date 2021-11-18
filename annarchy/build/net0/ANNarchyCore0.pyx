@@ -343,6 +343,9 @@ cdef extern from "ANNarchy.h":
         @staticmethod
         ProjRecorder1* get_instance(int)
 
+        vector[double] effective_eta
+        bool record_effective_eta
+
         vector[double] learning_phase
         bool record_learning_phase
 
@@ -360,15 +363,6 @@ cdef extern from "ANNarchy.h":
 
         vector[vector[vector[double]]] trace
         bool record_trace
-
-        vector[double] eta_lr
-        bool record_eta_lr
-
-        vector[double] eta
-        bool record_eta
-
-        vector[double] effective_eta
-        bool record_effective_eta
 
         vector[vector[vector[double]]] delta_w
         bool record_delta_w
@@ -1038,6 +1032,15 @@ cdef class ProjRecorder1_wrapper:
     def __init__(self, list ranks, int period, int period_offset, long offset):
         self.id = ProjRecorder1.create_instance(ranks, period, period_offset, offset)
 
+    property effective_eta:
+        def __get__(self): return (ProjRecorder1.get_instance(self.id)).effective_eta
+        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).effective_eta = val
+    property record_effective_eta:
+        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_effective_eta
+        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_effective_eta = val
+    def clear_effective_eta(self):
+        (ProjRecorder1.get_instance(self.id)).effective_eta.clear()
+
     property learning_phase:
         def __get__(self): return (ProjRecorder1.get_instance(self.id)).learning_phase
         def __set__(self, val): (ProjRecorder1.get_instance(self.id)).learning_phase = val
@@ -1091,33 +1094,6 @@ cdef class ProjRecorder1_wrapper:
         def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_trace = val
     def clear_trace(self):
         (ProjRecorder1.get_instance(self.id)).trace.clear()
-
-    property eta_lr:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).eta_lr
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).eta_lr = val
-    property record_eta_lr:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_eta_lr
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_eta_lr = val
-    def clear_eta_lr(self):
-        (ProjRecorder1.get_instance(self.id)).eta_lr.clear()
-
-    property eta:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).eta
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).eta = val
-    property record_eta:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_eta
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_eta = val
-    def clear_eta(self):
-        (ProjRecorder1.get_instance(self.id)).eta.clear()
-
-    property effective_eta:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).effective_eta
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).effective_eta = val
-    property record_effective_eta:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_effective_eta
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_effective_eta = val
-    def clear_effective_eta(self):
-        (ProjRecorder1.get_instance(self.id)).effective_eta.clear()
 
     property delta_w:
         def __get__(self): return (ProjRecorder1.get_instance(self.id)).delta_w

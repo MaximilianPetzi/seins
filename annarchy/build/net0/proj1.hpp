@@ -56,6 +56,9 @@ struct ProjStruct1 : LILMatrix<int> {
 
 
 
+    // Global parameter effective_eta
+    double  effective_eta ;
+
     // Global parameter learning_phase
     double  learning_phase ;
 
@@ -73,15 +76,6 @@ struct ProjStruct1 : LILMatrix<int> {
 
     // Local parameter trace
     std::vector< std::vector<double > > trace;
-
-    // Global parameter eta_lr
-    double  eta_lr ;
-
-    // Global parameter eta
-    double  eta ;
-
-    // Global parameter effective_eta
-    double  effective_eta ;
 
     // Local parameter delta_w
     std::vector< std::vector<double > > delta_w;
@@ -106,6 +100,9 @@ struct ProjStruct1 : LILMatrix<int> {
 
 
 
+        // Global parameter effective_eta
+        effective_eta = 0.0;
+
         // Global parameter learning_phase
         learning_phase = 0.0;
 
@@ -123,15 +120,6 @@ struct ProjStruct1 : LILMatrix<int> {
 
         // Local variable trace
         trace = init_matrix_variable<double>(static_cast<double>(0.0));
-
-        // Global variable eta_lr
-        eta_lr = 0.0;
-
-        // Global variable eta
-        eta = 0.0;
-
-        // Global variable effective_eta
-        effective_eta = 0.0;
 
         // Local variable delta_w
         delta_w = init_matrix_variable<double>(static_cast<double>(0.0));
@@ -194,18 +182,6 @@ struct ProjStruct1 : LILMatrix<int> {
         // Check periodicity
         if(_transmission && _update && pop1._active && ( (t - _update_offset)%_update_period == 0L) ){
             // Global variables
-
-                // eta_lr=0.0
-                eta_lr = 0.0;
-
-
-                // eta += if learning_phase > 0.5: -eta_lr*(mean_error-mean_mean_error) else: 0.0
-                eta += (learning_phase > 0.5 ? (-eta_lr)*(mean_error - mean_mean_error) : 0.0);
-
-
-                // effective_eta = if learning_phase > 0.5: eta else: 0.0
-                effective_eta = (learning_phase > 0.5 ? eta : 0.0);
-
 
             // Local variables
 
@@ -397,6 +373,10 @@ struct ProjStruct1 : LILMatrix<int> {
 
     double get_global_attribute(std::string name) {
 
+        if ( name.compare("effective_eta") == 0 ) {
+            return effective_eta;
+        }
+
         if ( name.compare("learning_phase") == 0 ) {
             return learning_phase;
         }
@@ -417,18 +397,6 @@ struct ProjStruct1 : LILMatrix<int> {
             return max_weight_change;
         }
 
-        if ( name.compare("eta_lr") == 0 ) {
-            return eta_lr;
-        }
-
-        if ( name.compare("eta") == 0 ) {
-            return eta;
-        }
-
-        if ( name.compare("effective_eta") == 0 ) {
-            return effective_eta;
-        }
-
 
         // should not happen
         std::cerr << "ProjStruct1::get_global_attribute: " << name << " not found" << std::endl;
@@ -436,6 +404,11 @@ struct ProjStruct1 : LILMatrix<int> {
     }
 
     void set_global_attribute(std::string name, double value) {
+
+        if ( name.compare("effective_eta") == 0 ) {
+            effective_eta = value;
+
+        }
 
         if ( name.compare("learning_phase") == 0 ) {
             learning_phase = value;
@@ -462,21 +435,6 @@ struct ProjStruct1 : LILMatrix<int> {
 
         }
 
-        if ( name.compare("eta_lr") == 0 ) {
-            eta_lr = value;
-
-        }
-
-        if ( name.compare("eta") == 0 ) {
-            eta = value;
-
-        }
-
-        if ( name.compare("effective_eta") == 0 ) {
-            effective_eta = value;
-
-        }
-
     }
 
 
@@ -493,12 +451,6 @@ struct ProjStruct1 : LILMatrix<int> {
         size_in_bytes += sizeof(double) * trace.capacity();
         for(auto it = trace.begin(); it != trace.end(); it++)
             size_in_bytes += (it->capacity()) * sizeof(double);
-        // global variable eta_lr
-        size_in_bytes += sizeof(double);	// eta_lr
-        // global variable eta
-        size_in_bytes += sizeof(double);	// eta
-        // global variable effective_eta
-        size_in_bytes += sizeof(double);	// effective_eta
         // local variable delta_w
         size_in_bytes += sizeof(double) * delta_w.capacity();
         for(auto it = delta_w.begin(); it != delta_w.end(); it++)
@@ -507,6 +459,8 @@ struct ProjStruct1 : LILMatrix<int> {
         size_in_bytes += sizeof(double) * w.capacity();
         for(auto it = w.begin(); it != w.end(); it++)
             size_in_bytes += (it->capacity()) * sizeof(double);
+        // global parameter effective_eta
+        size_in_bytes += sizeof(double);	// effective_eta
         // global parameter learning_phase
         size_in_bytes += sizeof(double);	// learning_phase
         // global parameter error
