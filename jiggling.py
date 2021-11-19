@@ -16,7 +16,7 @@ import matplotlib.cm as cm
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals* 34 #34 für pca e.g.
+num_trials = num_goals* 300 #34 für pca e.g.
 print("num_trials=",num_trials)
 
 print(sim)
@@ -184,33 +184,47 @@ for t in range(num_trials):
     #hier:
     #plt.plot(rec['r'][:,12:19])
     #plt.show()
-    pcamin=30*8
-    if t==pcamin:
-        pca = PCA(n_components=10)
-    pcaplot=True
-    if pcaplot and t>pcamin:#%(num_goals*10)==0:
-        coloridx=(t%num_goals)/(num_goals-1)
-        #simulate(2000)
-        #rec = m.get()
-        print("trial nr",t/num_goals)
+    dopca=False
+    if dopca:
+        pcamin=num_trials-10*num_goals
+        firstpcasample=pcamin-5*num_goals
+        if firstpcasample==t-1:
+            pcaarray=np.zeros((400,0))
+        if firstpcasample<t and t<=pcamin:
+            print(np.shape(pcaarray),np.shape(rec["r"]))
+            np.concatenate((pcaarray,rec['r']),axis=1)
+        if t==pcamin:
+            pca = PCA(n_components=10)
+            print("datashape=",np.shape(pcaarray))
         
-        pcacomps=pca.fit_transform(rec['r'])
-        
-        print(pca.explained_variance_ratio_)
-        print(pca.singular_values_)
-        print(np.shape(pcacomps))
-        #plt.figure()
-        plt.subplot(2,1,1)
-        plt.plot(pcacomps[:,0],pcacomps[:,1],color=cm.rainbow(coloridx),linewidth=.5)
-        plt.scatter([pcacomps[0,0]],[pcacomps[0,1]],color=cm.rainbow(coloridx))
-        plt.xlabel("1st component")
-        plt.ylabel("2nd component")
-        plt.title("from trial nr. "+str(pcamin))
-        plt.subplot(2,1,2)
-        plt.plot(pca.explained_variance_ratio_)
-        plt.xlabel("Component number")
-        plt.ylabel("Explained variance")
-        #plt.show()
+        if t>pcamin and t%num_goals<2:#%(num_goals*10)==0:
+            coloridx=(t%num_goals)/(num_goals-1)
+            #simulate(2000)
+            #rec = m.get()
+            print("trial nr",t/num_goals)
+            
+            pcacomps=pca.fit_transform(rec['r'])
+            
+            print(pca.explained_variance_ratio_)
+            print(pca.singular_values_)
+            print(np.shape(pcacomps))
+            #plt.figure()######                                color=cm.rainbow(coloridx*3)
+            plt.subplot(2,1,1)
+            plt.scatter([pcacomps[0,0]],[pcacomps[0,1]],color=(0,t%num_goals,1-t%num_goals,.5))
+            plt.plot(pcacomps[:200,0],pcacomps[:200,1],color=(0,t%num_goals,1-t%num_goals,.5),linewidth=.5,label="goal"+str(t%num_goals)+"during input")
+            plt.plot(pcacomps[200:,0],pcacomps[200:,1],color=(0,t%num_goals,1-t%num_goals,1),linewidth=.5,label="goal"+str(t%num_goals)+"after input")
+            plt.scatter([pcacomps[-1,0]],[pcacomps[-1,1]],marker='^',color=(0,t%num_goals,1-t%num_goals,1))
+            plt.legend()
+            
+            
+            plt.xlabel("1st component")
+            plt.ylabel("2nd component")
+            plt.title("from trial nr. "+str(pcamin))
+            plt.subplot(2,1,2)
+            plt.plot(pca.explained_variance_ratio_)
+            plt.xlabel("Component number")
+            plt.ylabel("Explained variance")
+            #plt.show()
 
 
     output = np.mean(output, axis=0)
@@ -252,7 +266,9 @@ for t in range(num_trials):
         Wrec.mean_error = R_mean[t % num_goals]
         Wrec.mean_mean_error = R_mean_mean[t % num_goals]
         
-        eta_lr=0.3
+        eta_lr=0
+        if t==num_goals*30:
+            Wrec.effective_eta=0.0625
         Wrec.effective_eta += -eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)
         # Learn for one step
         step()
