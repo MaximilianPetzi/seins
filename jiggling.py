@@ -186,7 +186,7 @@ for t in range(num_trials):
     #plt.show()
     dopca=True
     if dopca:
-        pcamin=num_trials-10*num_goals
+        pcamin=num_goals*12#num_trials-10*num_goals
         firstpcasample=pcamin-5*num_goals
         if firstpcasample==t-1:
             pcaarray=np.zeros((400,0))
@@ -197,8 +197,7 @@ for t in range(num_trials):
         if t==pcamin:
             pca = PCA(n_components=10)
             print("datashape=",np.shape(pcaarray))
-        if t==pcamin+5*num_goals:Wrec.effective_eta=0#delete
-        if t>pcamin and t%num_goals<2:# and t%(num_goals*56)==0:
+        if t>pcamin and t%num_goals<2 and t%(num_goals*14)<2:
             #coloridx=min(1,max(0,t/num_goals/300))
             #coloridx=(t%num_goals)/(num_goals-1)
             #simulate(2000)
@@ -219,8 +218,10 @@ for t in range(num_trials):
             plt.plot(pcacomps[:200,0],pcacomps[:200,1],color=cm.rainbow(coloridx),linewidth=.2,label="goal"+str(t%num_goals)+"during input")
             plt.plot(pcacomps[200:,0],pcacomps[200:,1],color=cm.rainbow(coloridx),linewidth=.8,label="goal"+str(t%num_goals)+"after input")
             plt.scatter([pcacomps[-1,0]],[pcacomps[-1,1]],marker='^',s=markersize,color=cm.rainbow(coloridx))
+            plt.text(pcacomps[0,0],pcacomps[0,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
+            plt.text(pcacomps[-1,0],pcacomps[-1,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
             #plt.legend()
-            coloridx+=(1-coloridx)/5
+            coloridx+=(1-coloridx)/8
             
             
             plt.xlabel("1st component")
@@ -316,4 +317,5 @@ np.save('error_h/'+sim+'error.npy', [errh,gh,etafh])
 #plitstr="goals"+num_goals
 #np.save("error_h/plitstr",plitstr)
 print("last line:")
-plt.show()
+plt.savefig("bilder/pca.png")
+#plt.show()
