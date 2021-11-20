@@ -11,7 +11,7 @@ neuron = Neuron(
         tau = 30.0 : population # Time constant
         constant = 0.0 # The four first neurons have constant rates
         alpha = 0.05 : population # To compute the sliding mean 0.05
-        f = 9 : population # Frequency of the perturbation 3/9
+        f = 2.25 : population # Frequency of the perturbation 3/9
         A = 20. : population # Perturbation amplitude. dt*A/tau should be 0.5... original=16/20
     """,
     equations="""
