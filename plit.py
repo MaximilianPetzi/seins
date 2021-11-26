@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt 
 import matplotlib
+import matplotlib.cm as cm
 #matplotlib.use("TkAgg")
 import os
 #import pandas as pd
@@ -37,7 +38,7 @@ for tracker in range(3):
         lasterrerr=np.std(lasterrs)/np.shape(lasterrs)[0]**.5
         print("lasterr=",lasterr, "+/-",lasterrerr)
         print("lasterrs",lasterrs)
-    
+        errorAm=Am
     yerr=np.std(Am,axis=0)/nrtries**.5
     aAm=np.average(Am,axis=0)
 
@@ -49,6 +50,11 @@ for tracker in range(3):
 #df.B.plot(yerr=yerrs[1],secondary_y=True,capsize=2,color=(1,.5,0,.2))
 #plt.legend()
 #plt.plot()
+plt.figure()
+for i in range(10):
+    colidx=i/10
+    plt.plot(errorAm[i],color=cm.rainbow(colidx),linewidth=.4)
+    plt.ylabel("error")
 plt.figure()
 plt.plot(aAms[0],color="black",linewidth=.4)
 plt.errorbar(x=range(len(aAms[0])),y=aAms[0], yerr=yerrs[0],color=(0,0,0,.2),elinewidth=.5)

@@ -16,7 +16,7 @@ import matplotlib.cm as cm
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals* 200 #34 für pca e.g.
+num_trials = num_goals* 150 #34 für pca e.g.
 print("num_trials=",num_trials)
 
 print(sim)
@@ -184,7 +184,7 @@ for t in range(num_trials):
     #hier:
     #plt.plot(rec['r'][:,12:19])
     #plt.show()
-    dopca=True
+    dopca=False
     if dopca:
         pcamin=num_goals*12#num_trials-10*num_goals
         firstpcasample=pcamin-5*num_goals
@@ -195,7 +195,7 @@ for t in range(num_trials):
             print(np.shape(pcaarray),np.shape(rec["r"]))
             np.concatenate((pcaarray,rec['r']),axis=1)
         if t==pcamin:
-            pca = PCA(n_components=10)
+            pca = PCA(n_components=2)
             print("datashape=",np.shape(pcaarray))
         if t>pcamin and t%num_goals<2 and t%(num_goals*14)<2:
             #coloridx=min(1,max(0,t/num_goals/300))
@@ -218,8 +218,8 @@ for t in range(num_trials):
             plt.plot(pcacomps[:200,0],pcacomps[:200,1],color=cm.rainbow(coloridx),linewidth=.2,label="goal"+str(t%num_goals)+"during input")
             plt.plot(pcacomps[200:,0],pcacomps[200:,1],color=cm.rainbow(coloridx),linewidth=.8,label="goal"+str(t%num_goals)+"after input")
             plt.scatter([pcacomps[-1,0]],[pcacomps[-1,1]],marker='^',s=markersize,color=cm.rainbow(coloridx))
-            plt.text(pcacomps[0,0],pcacomps[0,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
-            plt.text(pcacomps[-1,0],pcacomps[-1,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
+            #plt.text(pcacomps[0,0],pcacomps[0,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
+            #plt.text(pcacomps[-1,0],pcacomps[-1,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
             #plt.legend()
             coloridx+=(1-coloridx)/8
             
