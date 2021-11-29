@@ -16,7 +16,7 @@ import matplotlib.cm as cm
 
 sim = sys.argv[1]
 num_goals=int(sys.argv[2])
-num_trials = num_goals* 150 #34 für pca e.g.
+num_trials = num_goals* 600 #34 für pca e.g.
 print("num_trials=",num_trials)
 
 print(sim)
