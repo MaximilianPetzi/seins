@@ -1,4 +1,4 @@
-
+allezehn=False
 from ANNarchy import *
 from reservoir import *
 from kinematic import *
@@ -7,6 +7,10 @@ from CPG_lib.MLMPCPG.MLMPCPG import *
 from CPG_lib.MLMPCPG.myPloting import *
 from CPG_lib.MLMPCPG.SetTiming import *
 
+#3D stuff:
+from mpl_toolkits import mplot3d
+from mpl_toolkits.mplot3d import axes3d
+
 import importlib
 import sys
 import time
@@ -14,9 +18,9 @@ import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.cm as cm
 
-sim = sys.argv[1]
-num_goals=int(sys.argv[2])
-num_trials = num_goals* 600 #34 für pca e.g.
+sim = str(1)#sys.argv[1]
+num_goals=8#int(sys.argv[2])
+num_trials = num_goals* 400  #34 für pca e.g.
 print("num_trials=",num_trials)
 
 print(sim)
@@ -149,6 +153,20 @@ def execute_movement(pms):
     final_pos = wrist_position(mc_a[joints])[0:3]
     return final_pos
 
+def record_net(t):
+    pop.x = Uniform(-0.01, 0.01).get_values(N)
+    pop.r = np.tanh(pop.x)
+    pop[1].r = np.tanh(1.0)
+    pop[10].r = np.tanh(1.0)
+    pop[11].r = np.tanh(-1.0)
+
+    inp[(t % num_goals)].r = 1.0
+    simulate(200)
+    inp.r = 0.0
+    simulate(200)
+
+    rec = m.get()
+    return rec['r']
 
 goal_history = np.zeros((num_goals, 3))
 for i in range(num_goals):
@@ -156,8 +174,10 @@ for i in range(num_goals):
 
 g_growth=1
 #Wrec.effectvie_eta=1.0
-
+whist=[]
 for t in range(num_trials):
+    if t%1==0:
+        pass
     print('trial '+str(t))
     current_goal = goal_history[t % num_goals]
 
@@ -184,55 +204,57 @@ for t in range(num_trials):
     #hier:
     #plt.plot(rec['r'][:,12:19])
     #plt.show()
-    dopca=False
-    if dopca:
+    dopca=True
+    plotnow=False
+    
+    if allezehn==True:
+        if t%(8*num_goals)==0:
+            plotnow=True
+    if dopca and (t==num_goals*200 or t==num_goals*200 or plotnow==True):
         pcamin=num_goals*12#num_trials-10*num_goals
-        firstpcasample=pcamin-5*num_goals
-        if firstpcasample==t-1:
+        firstpcasample=pcamin-0*num_goals
+        if True:#firstpcasample==t-1:
             pcaarray=np.zeros((400,0))
             coloridx=0
-        if firstpcasample<t and t<=pcamin:
-            print(np.shape(pcaarray),np.shape(rec["r"]))
-            np.concatenate((pcaarray,rec['r']),axis=1)
-        if t==pcamin:
-            pca = PCA(n_components=2)
+        #if firstpcasample<t and t<=pcamin:
+        for pt in range(5):
+            reco=record_net(t=t)
+            print(np.shape(pcaarray),np.shape(reco))
+            np.concatenate((pcaarray,reco),axis=1)
+        if True:#t==pcamin:
+            pca = PCA(n_components=3)
             print("datashape=",np.shape(pcaarray))
-        if t>pcamin and t%num_goals<2 and t%(num_goals*14)<2:
+        #if t>pcamin and t%num_goals<2 and t%(num_goals*14)<2:
+        
+        fig=plt.figure()
+        #3D:
+        ax = fig.add_subplot(projection='3d')
+        for pt in range(5):
             #coloridx=min(1,max(0,t/num_goals/300))
             #coloridx=(t%num_goals)/(num_goals-1)
             #simulate(2000)
             #rec = m.get()
-            print("trial nr",t/num_goals)
-            
-            pcacomps=pca.fit_transform(rec['r'])
+            reco=record_net(t=t)#means that the goal is also fixed
+            pcacomps=pca.fit_transform(reco)
             
             print(pca.explained_variance_ratio_)
             print(pca.singular_values_)
             print(np.shape(pcacomps))
             #plt.figure()######    color=(0,coloridx,1-coloridx,.4)   color=cm.rainbow(coloridx))
             #plt.subplot(2,1,1)
-            if t%num_goals==0:markersize=20
-            if t%num_goals==1:markersize=70
             
-            plt.scatter([pcacomps[0,0]],[pcacomps[0,1]],s=markersize,color=cm.rainbow(coloridx))
-            plt.plot(pcacomps[:200,0],pcacomps[:200,1],color=cm.rainbow(coloridx),linewidth=.2,label="goal"+str(t%num_goals)+"during input")
-            plt.plot(pcacomps[200:,0],pcacomps[200:,1],color=cm.rainbow(coloridx),linewidth=.8,label="goal"+str(t%num_goals)+"after input")
-            plt.scatter([pcacomps[-1,0]],[pcacomps[-1,1]],marker='^',s=markersize,color=cm.rainbow(coloridx))
-            #plt.text(pcacomps[0,0],pcacomps[0,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
-            #plt.text(pcacomps[-1,0],pcacomps[-1,1], str((t-t%num_goals)/num_goals), color="black", fontsize=12)
-            #plt.legend()
-            coloridx+=(1-coloridx)/8
+            #3D:
+            #if t%num_goals==0:markersize=20
+            #if t%num_goals==1:markersize=70
+            ax.plot(pcacomps[:201,0],pcacomps[:201,1],pcacomps[:201,2],color=cm.rainbow(coloridx),linewidth=1)
+            ax.plot(pcacomps[200:,0],pcacomps[200:,1],pcacomps[200:,2],color=cm.rainbow(coloridx),linewidth=.5)
+            ax.set_xlabel('component 1')
+            ax.set_ylabel('component 2')
+            ax.set_zlabel('component 3')
             
-            
-            plt.xlabel("1st component")
-            plt.ylabel("2nd component")
-            plt.title("from trial nr. "+str(pcamin))
-            #plt.subplot(2,1,2)
-            #plt.plot(pca.explained_variance_ratio_)
-            #plt.xlabel("Component number")
-            #plt.ylabel("Explained variance")
-            #plt.show()
-
+            coloridx+=(1-coloridx)/4
+        plt.savefig("bilder/f2-25_trial"+str(t)+".png")
+        plt.show()
 
     output = np.mean(output, axis=0)
 
@@ -253,7 +275,6 @@ for t in range(num_trials):
     error = distance
     weightlist68=np.array(Wrec.w)
     weightlist69=np.reshape(weightlist68,(N**2))
-    
     ghat=np.std(weightlist69)*np.sqrt(N)
     #manuel g steuern
     #print(ghat)
@@ -265,7 +286,6 @@ for t in range(num_trials):
     #wrecc=np.array(Wrec.w)
     #wrecc*=g_growth
     #Wrec.w=(wrecc).tolist()
-
     if(t > 6*num_goals):
         # Apply the learning rule
         Wrec.learning_phase = 1.0
@@ -273,10 +293,11 @@ for t in range(num_trials):
         Wrec.mean_error = R_mean[t % num_goals]
         Wrec.mean_mean_error = R_mean_mean[t % num_goals]
         
-        eta_lr=0
-        #if t==num_goals*30:
-        #    Wrec.effective_eta=0.25
-        Wrec.effective_eta += -eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)
+        eta_lr=0.5
+        pop.A += -0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)  #Wrec.effective_eta
+        if t%8==0:                                                                     
+            print("A=",pop.A," (deltaA=",-0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error),") Rmean=",Wrec.mean_error)
+
         # Learn for one step
         step()
         # Reset the traces
@@ -292,9 +313,26 @@ for t in range(num_trials):
                                         
     error_history[t] = error
     g_history[t] = ghat
-    etaf_history[t]= Wrec.effective_eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
+    whist.append(weightlist69[::111])
+    #np.save("whist",whist)
+    #plt.scatter(t*np.ones(len(weightlist69[:220:11])),weightlist69[:220:11],s=4)
+    etaf_history[t]= pop.A#Wrec.effective_eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
     #print(R_mean[t % num_goals]-R_mean_mean[t % num_goals],Wrec.eta)  
-print(np.shape(error_history))
+
+#whist=np.array(whist)
+#print(np.shape(whist))
+
+#plt.plot(whist[:,:10])
+#plt.show()
+#print("plotting")
+#plt.plot(whist[:,10:20])
+#plt.show()
+#plt.plot(whist[:,20:30])
+#plt.show()
+#print(np.shape(error_history))
+
+np.save('error_h_goals/'+sim+'error.npy', [error_history,g_history,etaf_history])
+
 for gol in range(num_goals):
     if gol == 0:
         errh = np.zeros(len(error_history[gol:-num_goals:num_goals]))
@@ -319,3 +357,4 @@ np.save('error_h/'+sim+'error.npy', [errh,gh,etafh])
 print("last line:")
 plt.savefig("bilder/pca.png")
 #plt.show()
+print("finish")

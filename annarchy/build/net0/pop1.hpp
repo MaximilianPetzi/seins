@@ -208,9 +208,25 @@ struct PopStruct1{
 
 
 
-        // only first thread will compute
-        chunks_ = std::vector<int>(omp_get_max_threads() + 1, size);
-        chunks_[0] = 0;
+        // distribute the work load across available threads
+        int nt = omp_get_max_threads();
+        chunks_ = std::vector<int>(nt+1);
+
+        // try to avoid conflicts on one cache-line
+        int elem_per_cacheline = 64 / sizeof(double);
+        int chunk_size = static_cast<int>(ceil( static_cast<double>(size) / (static_cast<double>(nt*elem_per_cacheline))) * elem_per_cacheline );
+
+        // initialize chunks
+        for (int t = 0; t < nt; t++)
+            chunks_[t] = t*chunk_size;
+        chunks_[nt] = std::min(nt*chunk_size, size);
+    #ifdef _DEBUG
+        std::cout << "Population chunks: " << std::endl;
+        std::cout << "nt " << nt << " -> " << chunk_size << " : ";
+        for (auto it = chunks_.begin(); it != chunks_.end(); it++)
+            std::cout << *it << " ";
+        std::cout << std::endl;
+    #endif
 
     }
 
