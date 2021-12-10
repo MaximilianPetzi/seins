@@ -18,9 +18,9 @@ import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.cm as cm
 
-sim = str(1)#sys.argv[1]
-num_goals=8#int(sys.argv[2])
-num_trials = num_goals* 400  #34 für pca e.g.
+sim = sys.argv[1]
+num_goals=int(sys.argv[2])
+num_trials = num_goals* 300  #34 für pca e.g.
 print("num_trials=",num_trials)
 
 print(sim)
@@ -293,8 +293,10 @@ for t in range(num_trials):
         Wrec.mean_error = R_mean[t % num_goals]
         Wrec.mean_mean_error = R_mean_mean[t % num_goals]
         
-        eta_lr=0.5
-        pop.A += -0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)  #Wrec.effective_eta
+        eta_lr=45
+        #if Wrec.mean_error-Wrec.mean_mean_error>=0:pop.A += -0.05-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)  #Wrec.effective_eta
+        if pop.A<0:pop.A==0
+        #if t>=160*num_goals:pop.A=10
         if t%8==0:                                                                     
             print("A=",pop.A," (deltaA=",-0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error),") Rmean=",Wrec.mean_error)
 

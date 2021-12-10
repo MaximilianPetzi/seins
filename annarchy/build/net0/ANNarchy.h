@@ -14,7 +14,6 @@
 #include <string.h>
 #include <cmath>
 #include <random>
-#include <cassert>
 #include <omp.h>
 
 /*
@@ -26,6 +25,12 @@
 #define negative(x) (x<0.0? x : 0.0)
 #define clip(x, a, b) (x<a? a : (x>b? b :x))
 #define modulo(a, b) long(a) % long(b)
+#define Equality(a, b) a == b
+#define Eq(a, b) a == b
+#define And(a, b) a && b
+#define Or(a, b) a || b
+#define Not(a) !a
+#define Ne(a, b) a != b
 #define ite(a, b, c) (a?b:c)
 
 // power function for integer exponent
@@ -72,7 +77,7 @@ inline double power(double x, unsigned int a){
 */
 extern double dt;
 extern long int t;
-extern std::vector<std::mt19937> rng;
+extern std::mt19937  rng;
 
 
 /*
@@ -98,8 +103,7 @@ extern ProjStruct1 proj1;
 #include "Recorder.h"
 
 extern std::vector<Monitor*> recorders;
-int addRecorder(Monitor* recorder);
-Monitor* getRecorder(int id);
+void addRecorder(Monitor* recorder);
 void removeRecorder(Monitor* recorder);
 
 /*
@@ -107,7 +111,7 @@ void removeRecorder(Monitor* recorder);
  *
 */
 
-void initialize(double _dt) ;
+void initialize(double _dt, long int seed) ;
 
 void init_rng_dist();
 
@@ -132,11 +136,11 @@ void setDt(double dt_);
  * Number of threads
  *
 */
-void setNumberThreads(int threads, std::vector<int> core_list);
+void setNumberThreads(int threads);
 
 /*
  * Seed for the RNG
  *
 */
-void setSeed(long int seed, int num_sources, bool use_seed_seq);
+void setSeed(long int seed);
 
