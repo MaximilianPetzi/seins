@@ -14,7 +14,7 @@ for tracker in range(3):
     for i in range(nrt):
         #print(i+1)
         try:
-            trackers = np.load("error_h/"+str(i+1)+'error.npy')
+            trackers = np.load("error_h_Aadapt/etalr0.5/"+str(i+1)+'error.npy')
             t=trackers[tracker]
             am.append(t)
         except:
@@ -63,17 +63,17 @@ plt.figure()
 plt.plot(aAms[0],color="black",linewidth=.4)
 plt.errorbar(x=range(len(aAms[0])),y=aAms[0], yerr=yerrs[0],color=(0,0,0,.2),elinewidth=.5)
 plt.ylabel("error avg over "+str(nrtries)+" identical tries")
-plt.savefig("bilder/plit_temp/this"+plitstring+".png")
+#plt.savefig("bilder/plit_temp/this"+plitstring+".png")
 
 plt.figure()
 plt.plot(aAms[1],color="orange",linewidth=.4)
 #plt.errorbar(x=range(len(aAms[1])),y=aAms[1], yerr=yerrs[1],color=(1,.5,0,.2),elinewidth=.5)
 plt.ylabel("G avg over "+str(nrtries)+" identical tries")
-plt.savefig("bilder/plit_temp/that"+plitstring+".png")
+#plt.savefig("bilder/plit_temp/that"+plitstring+".png")
 plt.figure()
 plt.plot(aAms[2],color="green",linewidth=.4)
 plt.errorbar(x=range(len(aAms[2])),y=aAms[2], yerr=yerrs[1],color=(1,.5,0,.2),elinewidth=.5)
 plt.ylabel("eta_factor avg over "+str(nrtries)+" identical tries")
-plt.savefig("bilder/plit_temp/thot"+plitstring+".png")
+#plt.savefig("bilder/plit_temp/thot"+plitstring+".png")
 plt.show()
 

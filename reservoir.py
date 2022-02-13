@@ -1,18 +1,26 @@
-N=800
+
 from ANNarchy import *
 import matplotlib.pyplot as plt
 import os.path
 from scipy.stats import multivariate_normal
 import pickle
 
+
+content=np.load("paramfile.npy",allow_pickle=True)
+todo=content.item().get("todo")
+done=content.item().get("done")
+params=todo[0,-1]
+N=int(todo[0,3])
+print(str(todo[0,1]))
+print(str(todo[0,0]))
 neuron = Neuron(
     #hier
     parameters = """
         tau = 30.0 : population # Time constant
         constant = 0.0 # The four first neurons have constant rates
         alpha = 0.05 : population # To compute the sliding mean 0.05
-        f = 9 : population # Frequency of the perturbation 3/9
-        A = 20. : population # Perturbation amplitude. dt*A/tau should be 0.5... original=16/20
+        f = """+str(todo[0,1])+""" : population # Frequency of the perturbation 3/9
+        A = """+str(todo[0,0])+""" : population # Perturbation amplitude. dt*A/tau should be 0.5... original=16/20
     """,
     equations="""
         # Perturbation
@@ -36,7 +44,7 @@ neuron = Neuron(
 #eta * trace * (mean_error) * (error - mean_error)
 synapse = Synapse(
     parameters="""
-        effective_eta = 1.0: projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
+        effective_eta = """+str(todo[0,2])+""": projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
         learning_phase = 0.0 : projection # Flag to allow learning only at the end of a trial
         error = 0.0 : projection # Reward received
         mean_error = 0.0 : projection # Mean Reward received

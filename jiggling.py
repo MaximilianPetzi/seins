@@ -1,4 +1,5 @@
-allezehn=False
+Nsims=10
+allezehn=True
 from ANNarchy import *
 from reservoir import *
 from kinematic import *
@@ -13,17 +14,19 @@ from mpl_toolkits.mplot3d import axes3d
 
 import importlib
 import sys
+import os
 import time
 import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.cm as cm
 
-sim = str(1)#sys.argv[1]
-num_goals=8#int(sys.argv[2])
-num_trials = num_goals* 400  #34 für pca e.g.
+
+sim = sys.argv[1]
+num_goals=int(sys.argv[2])
+num_trials = num_goals* 1000 #34 für pca e.g.
 print("num_trials=",num_trials)
 
-print(sim)
+print("start sim=",sim)
 
 setup(num_threads=2)
 
@@ -176,9 +179,14 @@ g_growth=1
 #Wrec.effectvie_eta=1.0
 whist=[]
 for t in range(num_trials):
-    if t%1==0:
-        pass
-    print('trial '+str(t))
+    if os.path.isfile("stop"):#mkdir stop to manually stop all jiggling.py processes
+        print("stop")
+        sys.exit()
+    np.save("lasttime.npy", time.time())   #update latest time
+    #print("I'm still working!")
+    if t%10==0:
+        print("trial", t)
+    #print('trial '+str(t))
     current_goal = goal_history[t % num_goals]
 
     pop.x = Uniform(-0.01, 0.01).get_values(N)
@@ -190,7 +198,8 @@ for t in range(num_trials):
     inp[(t % num_goals)].r = 1.0
 
     simulate(200)
-
+    #print("I swear I'm working!")
+    np.save("lasttime.npy", time.time())   #update latest time
     inp.r = 0.0
     #hier:
     simulate(200)
@@ -207,57 +216,57 @@ for t in range(num_trials):
     dopca=True
     plotnow=False
     
-    if allezehn==True:
-        if t%(8*num_goals)==0:
+    if allezehn==False:
+        if t%(2*num_goals)==0:
             plotnow=True
-    if dopca and (t==num_goals*200 or t==num_goals*200 or plotnow==True):
-        pcamin=num_goals*12#num_trials-10*num_goals
+    if dopca and (False or plotnow==True):
+        pcamin=num_goals*6#num_trials-10*num_goals
         firstpcasample=pcamin-0*num_goals
         if True:#firstpcasample==t-1:
             pcaarray=np.zeros((400,0))
             coloridx=0
         #if firstpcasample<t and t<=pcamin:
-        for pt in range(5):
-            reco=record_net(t=t)
-            print(np.shape(pcaarray),np.shape(reco))
-            np.concatenate((pcaarray,reco),axis=1)
-        if True:#t==pcamin:
-            pca = PCA(n_components=3)
-            print("datashape=",np.shape(pcaarray))
-        #if t>pcamin and t%num_goals<2 and t%(num_goals*14)<2:
-        
-        fig=plt.figure()
-        #3D:
-        ax = fig.add_subplot(projection='3d')
-        for pt in range(5):
-            #coloridx=min(1,max(0,t/num_goals/300))
-            #coloridx=(t%num_goals)/(num_goals-1)
-            #simulate(2000)
-            #rec = m.get()
-            reco=record_net(t=t)#means that the goal is also fixed
-            pcacomps=pca.fit_transform(reco)
+        if t==pcamin:
+            for pt in range(7):
+                reco=record_net(t=t)
+                np.concatenate((pcaarray,reco),axis=1)
+                pca = PCA(n_components=3)
+            #if t>pcamin and t%num_goals<2 and t%(num_goals*14)<2:
             
-            print(pca.explained_variance_ratio_)
-            print(pca.singular_values_)
-            print(np.shape(pcacomps))
-            #plt.figure()######    color=(0,coloridx,1-coloridx,.4)   color=cm.rainbow(coloridx))
-            #plt.subplot(2,1,1)
             
+            
+        if t>pcamin:
+            fig=plt.figure()
             #3D:
-            #if t%num_goals==0:markersize=20
-            #if t%num_goals==1:markersize=70
-            ax.plot(pcacomps[:201,0],pcacomps[:201,1],pcacomps[:201,2],color=cm.rainbow(coloridx),linewidth=1)
-            ax.plot(pcacomps[200:,0],pcacomps[200:,1],pcacomps[200:,2],color=cm.rainbow(coloridx),linewidth=.5)
-            ax.set_xlabel('component 1')
-            ax.set_ylabel('component 2')
-            ax.set_zlabel('component 3')
+            ax = fig.add_subplot(projection='3d')
+            for pt in range(4):
+                #coloridx=min(1,max(0,t/num_goals/300))
+                #coloridx=(t%num_goals)/(num_goals-1)
+                #simulate(2000)
+                #rec = m.get()
+                reco=record_net(t=t)#means that the goal is also fixed
+                pcacomps=pca.fit_transform(reco)
+                
+                print("expl_var_ratio ",pca.explained_variance_ratio_)
+                #plt.figure()######    color=(0,coloridx,1-coloridx,.4)   color=cm.rainbow(coloridx))
+                #plt.subplot(2,1,1)
+                
+                #3D:
+                #if t%num_goals==0:markersize=20
+                #if t%num_goals==1:markersize=70
+                ax.plot(pcacomps[:201,0],pcacomps[:201,1],pcacomps[:201,2],color=cm.rainbow(coloridx),linewidth=1.3)
+                ax.plot(pcacomps[200:,0],pcacomps[200:,1],pcacomps[200:,2],color=cm.rainbow(coloridx),linewidth=.5,label=str(coloridx))
+                ax.set_xlabel('component 1')
+                ax.set_ylabel('component 2')
+                ax.set_zlabel('component 3')
+                print(coloridx,"=c, output=",np.mean(reco[-200:, -24:], axis=0))
+                coloridx+=(1-coloridx)/4
+            plt.legend()
+            plt.savefig("bilder/sharedbasis_trial"+str(t/num_goals)+".png")
+            if t>num_goals*40:plt.show();dskldsklsdlkfj=input("press anything")
             
-            coloridx+=(1-coloridx)/4
-        plt.savefig("bilder/f2-25_trial"+str(t)+".png")
-        plt.show()
 
     output = np.mean(output, axis=0)
-
     current_parms = np.zeros((4, 6))
     current_parms += output.reshape((4, 6))
 
@@ -294,7 +303,8 @@ for t in range(num_trials):
         Wrec.mean_mean_error = R_mean_mean[t % num_goals]
         
         eta_lr=0.5
-        pop.A += -0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)  #Wrec.effective_eta
+        #pop.A += -0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)  #Wrec.effective_eta
+        if pop.A<0:pop.A==0
         if t%8==0:                                                                     
             print("A=",pop.A," (deltaA=",-0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error),") Rmean=",Wrec.mean_error)
 
@@ -319,19 +329,13 @@ for t in range(num_trials):
     etaf_history[t]= pop.A#Wrec.effective_eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
     #print(R_mean[t % num_goals]-R_mean_mean[t % num_goals],Wrec.eta)  
 
-#whist=np.array(whist)
-#print(np.shape(whist))
+content=np.load("paramfile.npy",allow_pickle=True)
+todo=content.item().get("todo")
+done=content.item().get("done")
 
-#plt.plot(whist[:,:10])
-#plt.show()
-#print("plotting")
-#plt.plot(whist[:,10:20])
-#plt.show()
-#plt.plot(whist[:,20:30])
-#plt.show()
-#print(np.shape(error_history))
+dirname=str(todo[0,0])+"_"+str(todo[0,1])+"_"+str(todo[0,2])+"_"+str(todo[0,3])
 
-np.save('error_h_goals/'+sim+'error.npy', [error_history,g_history,etaf_history])
+#np.save('error_org/'+dirname+"/"+sim+'error.npy', [error_history,g_history,etaf_history])
 
 for gol in range(num_goals):
     if gol == 0:
@@ -350,11 +354,24 @@ errh /= num_goals
 gh/= num_goals
 etafh/=num_goals
 print("length of each errorhistory: ", len(errh))
-np.save('error_h/'+sim+'error.npy', [errh,gh,etafh])
+
+#save file as the lowest free name (if some file is missing)
+
+for i in range(Nsims):
+    #check if filename exists, if not: save under the missing name
+    fileex=os.path.isfile("error_org/"+dirname+"/"+str(i+1)+"error.npy")
+    if not fileex:
+        np.save('error_org/'+dirname+"/"+str(i+1)+'error.npy', [errh,gh,etafh])
+        maxcount=np.load("maxcount.npy")
+        maxcount=maxcount-1
+        np.save("maxcount.npy",maxcount)
+        break
+
+
+
 
 #plitstr="goals"+num_goals
 #np.save("error_h/plitstr",plitstr)
-print("last line:")
-plt.savefig("bilder/pca.png")
+#plt.savefig("bilder/pca.png")
 #plt.show()
-print("finish")
+print("jiggling finished")
