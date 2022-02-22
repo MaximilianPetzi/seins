@@ -179,12 +179,12 @@ g_growth=1
 #Wrec.effectvie_eta=1.0
 whist=[]
 for t in range(num_trials):
-    if os.path.isfile("stop"):#mkdir stop to manually stop all jiggling.py processes
+    if os.path.isfile("stop"):#"touch stop" to manually stop all jiggling.py processes
         print("stop")
         sys.exit()
     np.save("lasttime.npy", time.time())   #update latest time
     #print("I'm still working!")
-    if t%10==0:
+    if t%100==0:
         print("trial", t)
     #print('trial '+str(t))
     current_goal = goal_history[t % num_goals]
@@ -305,8 +305,8 @@ for t in range(num_trials):
         eta_lr=0.5
         #pop.A += -0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)  #Wrec.effective_eta
         if pop.A<0:pop.A==0
-        if t%8==0:                                                                     
-            print("A=",pop.A," (deltaA=",-0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error),") Rmean=",Wrec.mean_error)
+        #if t%8==0:                                                                     
+        #    print("A=",pop.A," (deltaA=",-0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error),") Rmean=",Wrec.mean_error)
 
         # Learn for one step
         step()

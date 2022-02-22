@@ -18,7 +18,7 @@ yerrs=[]
 #strlist=["error_h_A14/","error_h_A10/","error_h_A14-A10after40/","after80/","after160/","secondA14/","after20_after400_7/","thirdA14/","fourthA14/"]
 #strlist=["error_h_A14/","error_h_A10/","4_goals/A14/","4_goals/A10/","2_goals/A14/","2_goals/A10/"]
 #strlist=["A20/","A14/","A12/","A10/"]
-strlist=["10.0_9.0_1.0_400.0/","15.0_9.0_1.0_400.0/","20.0_9.0_1.0_400.0/"]
+strlist=["10.0_9.0_1.0_400.0/","15.0_9.0_1.0_400.0/","20.0_9.0_1.0_400.0/","20.0_1.5_1.0_400.0/"]
 for tracker in range(len(strlist)):
     am = []
     for i in range(nrt):
@@ -63,7 +63,7 @@ plt.plot(sliding_avg(aAms[0],8),color="black",linewidth=.6,label="A10")
 
 plt.plot(sliding_avg(aAms[1],8),color="green",linewidth=.6,label="A15")
 plt.plot(sliding_avg(aAms[2],8),color="yellow",linewidth=.9,label="A20")
-#plt.plot(sliding_avg(aAms[3],8),color="orange",linewidth=.6,label="A8")
+plt.plot(sliding_avg(aAms[3],8),color="orange",linewidth=.6,label="A20f1.5")
 
 #plt.plot(sliding_avg(aAms[3],8),color="violet",linewidth=1.1,label="8 goals")
 #plt.plot(sliding_avg(aAms[4],8),color="red",linewidth=.6,label="2 goals, A14")
