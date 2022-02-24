@@ -1,4 +1,4 @@
-Nsims=10
+Nsims=2
 allezehn=True
 from ANNarchy import *
 from reservoir import *
@@ -184,8 +184,8 @@ for t in range(num_trials):
         sys.exit()
     np.save("lasttime.npy", time.time())   #update latest time
     #print("I'm still working!")
-    if t%100==0:
-        print("trial", t)
+    #if t%100==0:
+    #    print("trial", t)
     #print('trial '+str(t))
     current_goal = goal_history[t % num_goals]
 
@@ -353,7 +353,7 @@ for gol in range(num_goals):
 errh /= num_goals
 gh/= num_goals
 etafh/=num_goals
-print("length of each errorhistory: ", len(errh))
+#print("length of each errorhistory: ", len(errh))
 
 #save file as the lowest free name (if some file is missing)
 

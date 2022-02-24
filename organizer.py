@@ -7,6 +7,7 @@ import time
 from termcolor import colored
 import numpy as np
 os.system("rm -r -f stop")
+os.system("mkdir error_org")
 while True: 
     maxcount=Nsims  #number of simulations that should run simultaneously
     np.save("maxcount.npy",maxcount) #maxcount not needed, delete!
@@ -16,7 +17,7 @@ while True:
     done=content.item().get("done")#simulations done, the latest simulation is done[-1]
     print("len todo=",len(todo))
     if len(todo)==0:print("---nothing todo, finished---"); break
-    print("---new param config---")
+    print(colored("---new param config---","red"))
 
     #take first element of todo list and move it to done stack
     newpar=todo[0]
