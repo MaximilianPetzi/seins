@@ -38,8 +38,16 @@ while True:
     print(colored(done, "red"))
     while True:
         time.sleep(20)#increase this to 60 seconds
-        print("checking if idle and if not finished")
-        lasttime=np.load("lasttime.npy")
+        print("checking if idle and if not finished, entering weird loop")
+        while True:
+            try:
+                lasttime=np.load("lasttime.npy")
+                break
+            except:
+                time.sleep(0.2)
+
+        #lasttime=time.time()
+
         #check if every process has stopped but the simulations aren't complete yet. 
         if time.time()-lasttime>20 and not os.path.isfile("error_org/"+dirname+"/"+str(Nsims)+"error.npy"):
             # then start another batch of simulations
