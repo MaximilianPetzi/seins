@@ -1,4 +1,4 @@
-Nsims=2
+Nsims=10
 allezehn=True
 from ANNarchy import *
 from reservoir import *
