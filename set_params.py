@@ -29,4 +29,5 @@ par2=np.array([An-4,fn,etan,Nn]).T
 #par=np.concatenate([par01,par0,par1,par2],axis=0)
 
 content={"todo":par0,"done":np.zeros((0,4))}
+print("content=",content)
 np.save("paramfile.npy", content)

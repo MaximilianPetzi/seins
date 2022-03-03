@@ -328,8 +328,13 @@ for t in range(num_trials):
     #plt.scatter(t*np.ones(len(weightlist69[:220:11])),weightlist69[:220:11],s=4)
     etaf_history[t]= pop.A#Wrec.effective_eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
     #print(R_mean[t % num_goals]-R_mean_mean[t % num_goals],Wrec.eta)  
-
-content=np.load("paramfile.npy",allow_pickle=True)
+while True:
+    try:
+        content=np.load("paramfile.npy",allow_pickle=True)
+        break
+    except:
+        time.sleep(0.1)
+        
 todo=content.item().get("todo")
 done=content.item().get("done")
 

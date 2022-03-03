@@ -38,7 +38,7 @@ while True:
     print(colored(done, "red"))
     while True:
         time.sleep(20)#increase this to 60 seconds
-        print("checking if idle and if not finished, entering weird loop")
+        #print("checking if idle and if not finished, entering weird loop")
         while True:
             try:
                 lasttime=np.load("lasttime.npy")
@@ -59,7 +59,7 @@ while True:
         if os.path.isfile("error_org/"+dirname+"/"+str(Nsims)+"error.npy"):
             print(colored("files complete","red"))
             break
-        print("error_org/"+dirname+"/"+str(Nsims)+"error.npy is still missing")
+        #print("error_org/"+dirname+"/"+str(Nsims)+"error.npy is still missing")
 
     content={"todo":todo,"done":done}
     np.save("paramfile.npy",content)

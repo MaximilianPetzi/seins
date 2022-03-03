@@ -1,9 +1,16 @@
+###
+
+
+#show todo and done in pyhton:
 import numpy as np
-
 params=np.load("paramfile.npy",allow_pickle=True)
-params=params.item().get("todo")
-import matplotlib.pyplot as plt
+todo=params.item().get("todo")
+done=params.item().get("done")
+print("todo: ",todo)
+print("done: ",done)
 
+import matplotlib.pyplot as plt
+params=todo
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 #0=A, 1=f, 2=eta
