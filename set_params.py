@@ -15,9 +15,6 @@ for i in range(linelen):
     fn=np.append(fn,df[i:])
     etan=np.append(etan,np.ones(linelen-i)*deta[i])
 
-An=dA
-fn=df 
-etan=deta
 
 Nn=np.ones(len(An))*800.
 par01=np.array([An+2,fn,etan,Nn]).T
@@ -27,6 +24,7 @@ par2=np.array([An-4,fn,etan,Nn]).T
 
 
 #par=np.concatenate([par01,par0,par1,par2],axis=0)
+#par=np.concatenate([par01,par0],axis=0)
 
 content={"todo":par0,"done":np.zeros((0,4))}
 print("content=",content)

@@ -12,13 +12,13 @@ def sliding_avg(array,alpha):
         ret.append(np.average(array[i:i+alpha],axis=0))
     return np.array(ret)
 os.system("rm bilder/plit_temp/*")
-nrt=25
+nrt=10
 aAms=[]
 yerrs=[]
 #strlist=["error_h_A14/","error_h_A10/","error_h_A14-A10after40/","after80/","after160/","secondA14/","after20_after400_7/","thirdA14/","fourthA14/"]
 #strlist=["error_h_A14/","error_h_A10/","4_goals/A14/","4_goals/A10/","2_goals/A14/","2_goals/A10/"]
 #strlist=["A20/","A14/","A12/","A10/"]
-strlist=["10.0_9.0_1.0_800.0/","12.0_9.0_1.0_800.0/","14.0_9.0_1.0_800.0/","16.0_9.0_1.0_800.0/","18.0_9.0_1.0_800.0/","20.0_9.0_1.0_800.0/"]
+strlist=["10.0_9.0_1.0_800.0/","12.0_9.0_0.8_800.0/","14.0_9.0_0.6_800.0/","16.0_9.0_0.4_800.0/","18.0_9.0_0.2_800.0/","20.0_9.0_0.1_800.0/"]
 #strlist=["16.0_3.0_1.0_800.0/","18.0_2.0_1.0_800.0/","20.0_1.5_1.0_800.0/"]
 for tracker in range(len(strlist)):
     am = []
@@ -26,12 +26,15 @@ for tracker in range(len(strlist)):
         #print(i+1)
         try:
             #trackers = np.load("varA_errors/6_goals/"+strlist[tracker]+str(i+1)+'error.npy')#trackers = np.load("error_h/"+str(i+1)+'error.npy')
-            trackers = np.load("collection/"+strlist[tracker]+str(i+1)+'error.npy')#trackers = np.load("error_h/"+str(i+1)+'error.npy')
+            trackers = np.load("collection/sA_20/"+strlist[tracker]+str(i+1)+'error.npy')#trackers = np.load("error_h/"+str(i+1)+'error.npy')
+            print("here:"+strlist[tracker]+str(i+1)+'error.npy')
             if tracker==7:print("grey: ",np.shape(trackers))
             t=trackers[0]
             am.append(t[:990])
         except:
             pass
+            print("missing: "+strlist[tracker]+str(i+1)+'error.npy')
+
             #print("missing: varA_errors/"+strlist[tracker]+str(i+1)+'error.npy')
     am=np.array(am)
     nrtries=len(am)
@@ -60,14 +63,14 @@ for tracker in range(len(strlist)):
     yerrs.append(yerr)
 #print("shapes aAms[i]:",np.shape(aAms[0]),np.shape(aAms[1]),np.shape(aAms[2]),np.shape(aAms[3]),np.shape(aAms[4]))
 
-plt.plot(sliding_avg(aAms[0],8),color="black",linewidth=.6,label="A")
+swindow=4
+plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="A")
+plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="AA")
+plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="AAA")
+plt.plot(sliding_avg(aAms[3],swindow),color="orange",linewidth=.6,label="AAAA")
+plt.plot(sliding_avg(aAms[4],swindow),color="red",linewidth=0.6,label="5A")
+plt.plot(sliding_avg(aAms[5],swindow),color="violet",linewidth=.6,label="6A")
 
-plt.plot(sliding_avg(aAms[1],8),color="green",linewidth=.6,label="AA")
-plt.plot(sliding_avg(aAms[2],8),color="yellow",linewidth=.9,label="AAA")
-plt.plot(sliding_avg(aAms[3],8),color="orange",linewidth=.6,label="AAAA")
-
-plt.plot(sliding_avg(aAms[4],8),color="red",linewidth=1.1,label="5A")
-plt.plot(sliding_avg(aAms[5],8),color="violet",linewidth=.6,label="6A")
 #plt.plot(sliding_avg(aAms[5],8),color="grey",linewidth=.6,label="2 goals, A10")
 #plt.plot(sliding_avg(aAms[6],8),color="brown",linewidth=.6,label="after20_after400_7")
 #plt.plot(sliding_avg(aAms[7],8),color="grey",linewidth=.6,label="A=14(3)")
