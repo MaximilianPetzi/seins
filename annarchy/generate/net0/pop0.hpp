@@ -1,5 +1,5 @@
 /*
- *  ANNarchy-version: 4.7.0b
+ *  ANNarchy-version: 4.6.10.1
  */
 #pragma once
 #include "ANNarchy.h"
@@ -8,7 +8,7 @@
 
 extern double dt;
 extern long int t;
-extern std::vector<std::mt19937> rng;
+extern std::mt19937 rng;
 
 
 ///////////////////////////////////////////////////////////////
@@ -28,8 +28,6 @@ struct PopStruct0{
     bool is_active() { return _active; }
     void set_active(bool val) { _active = val; }
 
-    // workload assignment
-    std::vector<int> chunks_;
 
 
     // Neuron specific parameters and variables
@@ -69,11 +67,6 @@ struct PopStruct0{
 
 
 
-
-        // only first thread will compute
-        chunks_ = std::vector<int>(omp_get_max_threads() + 1, size);
-        chunks_[0] = 0;
-
     }
 
     // Method called to reset the population
@@ -89,15 +82,12 @@ struct PopStruct0{
     }
 
     // Method to draw new random numbers
-    void update_rng(int tid) {
-#ifdef _TRACE_SIMULATION_STEPS
-    std::cout << "    PopStruct0::update_rng()" << std::endl;
-#endif
+    void update_rng() {
 
     }
 
     // Method to update global operations on the population (min/max/mean...)
-    void update_global_ops(int tid, int nt) {
+    void update_global_ops() {
 
     }
 
@@ -112,18 +102,13 @@ struct PopStruct0{
     }
 
     // Main method to update neural variables
-    void update(int tid) {
-#ifdef _TRACE_SIMULATION_STEPS
-    std::cout << "    PopStruct0::update()" << std::endl;
-#endif
+    void update() {
 
         if( _active ) {
 
         } // active
 
-    }
 
-    void spike_gather(int tid, int num_threads) {
 
     }
 

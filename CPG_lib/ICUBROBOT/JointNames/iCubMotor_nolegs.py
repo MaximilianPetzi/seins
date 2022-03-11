@@ -1,51 +1,51 @@
 
-global  NeckPitch, NeckRoll, NeckYaw, EyesTilt, EyesVersion, EyesVergence, TorsoYaw, TorsoRoll, TorsoPitch, RShoulderPitch, RShoulderRoll, \
-    RShoulderYaw, RElbow, RWristProsup, RWristPitch, RWristYaw, RHandFinger, RThumbOppose, RThumbProximal, RThumbDistal, RIndexProximal, \
-    RIndexDistal, RMiddleProximal, RMiddleDistal, RPinky, LShoulderPitch, LShoulderRoll, LShoulderYaw, LElbow, LWristProsup, LWristPitch, \
-    LWristYaw, LHandFinger, LThumbOppose, LThumbProximal, LThumbDistal, LIndexProximal, LIndexDistal, LMiddleProximal, LMiddleDistal, LPinky\
+global  RShoulderPitch, RShoulderRoll, RShoulderYaw, RElbow, RWristProsup, RWristPitch, RWristYaw, RHandFinger, RThumbOppose, RThumbProximal, RThumbDistal, \
+    RIndexProximal, RIndexDistal, RMiddleProximal, RMiddleDistal, RPinky, LShoulderPitch, LShoulderRoll, LShoulderYaw, LElbow, LWristProsup, \
+    LWristPitch, LWristYaw, LHandFinger, LThumbOppose, LThumbProximal, LThumbDistal, LIndexProximal, LIndexDistal, LMiddleProximal, LMiddleDistal, \
+    LPinky, TorsoYaw, TorsoRoll, TorsoPitch, NeckPitch, NeckRoll, NeckYaw, EyesTilt, EyesVersion, EyesVergence\
     
 
-NeckPitch          =  0
-NeckRoll           =  1
-NeckYaw            =  2
-EyesTilt           =  3
-EyesVersion        =  4
-EyesVergence       =  5
-TorsoYaw           =  6
-TorsoRoll          =  7
-TorsoPitch         =  8
-RShoulderPitch     =  9
-RShoulderRoll      = 10
-RShoulderYaw       = 11
-RElbow             = 12
-RWristProsup       = 13
-RWristPitch        = 14
-RWristYaw          = 15
-RHandFinger        = 16
-RThumbOppose       = 17
-RThumbProximal     = 18
-RThumbDistal       = 19
-RIndexProximal     = 20
-RIndexDistal       = 21
-RMiddleProximal    = 22
-RMiddleDistal      = 23
-RPinky             = 24
-LShoulderPitch     = 25
-LShoulderRoll      = 26
-LShoulderYaw       = 27
-LElbow             = 28
-LWristProsup       = 29
-LWristPitch        = 30
-LWristYaw          = 31
-LHandFinger        = 32
-LThumbOppose       = 33
-LThumbProximal     = 34
-LThumbDistal       = 35
-LIndexProximal     = 36
-LIndexDistal       = 37
-LMiddleProximal    = 38
-LMiddleDistal      = 39
-LPinky             = 40
+RShoulderPitch     =  0
+RShoulderRoll      =  1
+RShoulderYaw       =  2
+RElbow             =  3
+RWristProsup       =  4
+RWristPitch        =  5
+RWristYaw          =  6
+RHandFinger        =  7
+RThumbOppose       =  8
+RThumbProximal     =  9
+RThumbDistal       = 10
+RIndexProximal     = 11
+RIndexDistal       = 12
+RMiddleProximal    = 13
+RMiddleDistal      = 14
+RPinky             = 15
+LShoulderPitch     = 16
+LShoulderRoll      = 17
+LShoulderYaw       = 18
+LElbow             = 19
+LWristProsup       = 20
+LWristPitch        = 21
+LWristYaw          = 22
+LHandFinger        = 23
+LThumbOppose       = 24
+LThumbProximal     = 25
+LThumbDistal       = 26
+LIndexProximal     = 27
+LIndexDistal       = 28
+LMiddleProximal    = 29
+LMiddleDistal      = 30
+LPinky             = 31
+TorsoYaw           = 32
+TorsoRoll          = 33
+TorsoPitch         = 34
+NeckPitch          = 35
+NeckRoll           = 36
+NeckYaw            = 37
+EyesTilt           = 38
+EyesVersion        = 39
+EyesVergence       = 40
 
 global MotorCommand
 MotorCommand = [0 for x in range(41)]

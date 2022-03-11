@@ -1,5 +1,5 @@
 Filename, Object Description
 pop0, Population( name = pop0 )
 pop1, Population( name = pop1 )
-proj0, Projection( pre = pop0, post = pop1, target = in ) using connector: All-to-All 
-proj1, Projection( pre = pop1, post = pop1, target = exc ) using connector: All-to-All 
+proj0, Projection( pre = pop0, post = pop1, target = in ) using connector: All-to-All, weights $\mathcal{U}$(-0.2, 0.2), delays 0.0 
+proj1, Projection( pre = pop1, post = pop1, target = exc ) using connector: All-to-All, weights $\mathcal{N}$(0.0, 0.035355339059327376), delays 0.0 

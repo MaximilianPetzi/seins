@@ -1,5 +1,5 @@
 /*
- *  ANNarchy-version: 4.7.0b
+ *  ANNarchy-version: 4.6.10.1
  */
 #pragma once
 #include "ANNarchy.h"
@@ -8,7 +8,7 @@
 
 extern double dt;
 extern long int t;
-extern std::vector<std::mt19937> rng;
+extern std::mt19937 rng;
 
 
 ///////////////////////////////////////////////////////////////
@@ -28,8 +28,6 @@ struct PopStruct1{
     bool is_active() { return _active; }
     void set_active(bool val) { _active = val; }
 
-    // workload assignment
-    std::vector<int> chunks_;
 
 
     // Neuron specific parameters and variables
@@ -78,9 +76,9 @@ struct PopStruct1{
 
     // Random numbers
     std::vector<double> rand_0;
-    std::vector<std::uniform_real_distribution< double >> dist_rand_0;
+    std::uniform_real_distribution< double > dist_rand_0;
         std::vector<double> rand_1;
-    std::vector<std::uniform_real_distribution< double >> dist_rand_1;
+    std::uniform_real_distribution< double > dist_rand_1;
 
 
 
@@ -207,27 +205,6 @@ struct PopStruct1{
 
 
 
-
-        // distribute the work load across available threads
-        int nt = omp_get_max_threads();
-        chunks_ = std::vector<int>(nt+1);
-
-        // try to avoid conflicts on one cache-line
-        int elem_per_cacheline = 64 / sizeof(double);
-        int chunk_size = static_cast<int>(ceil( static_cast<double>(size) / (static_cast<double>(nt*elem_per_cacheline))) * elem_per_cacheline );
-
-        // initialize chunks
-        for (int t = 0; t < nt; t++)
-            chunks_[t] = t*chunk_size;
-        chunks_[nt] = std::min(nt*chunk_size, size);
-    #ifdef _DEBUG
-        std::cout << "Population chunks: " << std::endl;
-        std::cout << "nt " << nt << " -> " << chunk_size << " : ";
-        for (auto it = chunks_.begin(); it != chunks_.end(); it++)
-            std::cout << *it << " ";
-        std::cout << std::endl;
-    #endif
-
     }
 
     // Method called to reset the population
@@ -240,44 +217,30 @@ struct PopStruct1{
     // Init rng dist
     void init_rng_dist() {
 
-        dist_rand_0 = std::vector< std::uniform_real_distribution< double > >(omp_get_max_threads());
-        #pragma omp parallel
-        {
-            dist_rand_0[omp_get_thread_num()] = std::uniform_real_distribution< double >(0.0, 1.0);
-        }
+        dist_rand_0 = std::uniform_real_distribution< double >(0.0, 1.0);
 
-        dist_rand_1 = std::vector< std::uniform_real_distribution< double > >(omp_get_max_threads());
-        #pragma omp parallel
-        {
-            dist_rand_1[omp_get_thread_num()] = std::uniform_real_distribution< double >(-1.0, 1.0);
-        }
+        dist_rand_1 = std::uniform_real_distribution< double >(-1.0, 1.0);
 
     }
 
     // Method to draw new random numbers
-    void update_rng(int tid) {
-#ifdef _TRACE_SIMULATION_STEPS
-    std::cout << "    PopStruct1::update_rng()" << std::endl;
-#endif
+    void update_rng() {
 
-        #pragma omp single
-        {
-            if (_active){
+        if (_active){
 
-                for(int i = 0; i < size; i++) {
+            for(int i = 0; i < size; i++) {
 
-                rand_0[i] = dist_rand_0[0](rng[0]);
+                rand_0[i] = dist_rand_0(rng);
 
-                rand_1[i] = dist_rand_1[0](rng[0]);
+                rand_1[i] = dist_rand_1(rng);
 
-                }
             }
         }
 
     }
 
     // Method to update global operations on the population (min/max/mean...)
-    void update_global_ops(int tid, int nt) {
+    void update_global_ops() {
 
     }
 
@@ -292,16 +255,13 @@ struct PopStruct1{
     }
 
     // Main method to update neural variables
-    void update(int tid) {
-#ifdef _TRACE_SIMULATION_STEPS
-    std::cout << "    PopStruct1::update()" << std::endl;
-#endif
+    void update() {
 
         if( _active ) {
 
             // Updating the local variables
-            #pragma omp simd
-            for (int i = chunks_[tid]; i < chunks_[tid+1]; i++) {
+            #pragma omp parallel for simd
+            for(int i = 0; i < size; i++){
 
                 // perturbation = if Uniform(0.0, 1.0) < f/1000.: 1.0 else: 0.0
                 perturbation[i] = (rand_0[i] < f/1000.0 ? 1.0 : 0.0);
@@ -335,9 +295,7 @@ struct PopStruct1{
 
         } // active
 
-    }
 
-    void spike_gather(int tid, int num_threads) {
 
     }
 

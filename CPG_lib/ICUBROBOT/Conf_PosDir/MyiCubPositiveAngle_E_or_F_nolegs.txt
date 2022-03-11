@@ -1,12 +1,3 @@
-NeckPitch E
-NeckRoll E
-NeckYaw E
-EyesTilt E
-EyesVersion E
-EyesVergence F
-TorsoYaw E
-TorsoRoll E
-TorsoPitch F
 RShoulderPitch F
 RShoulderRoll E
 RShoulderYaw F
@@ -39,3 +30,12 @@ LIndexDistal F
 LMiddleProximal F
 LMiddleDistal F
 LPinky F
+TorsoYaw E
+TorsoRoll E
+TorsoPitch F
+NeckPitch E
+NeckRoll E
+NeckYaw E
+EyesTilt E
+EyesVersion E
+EyesVergence F

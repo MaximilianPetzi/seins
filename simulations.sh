@@ -2,7 +2,7 @@
 #rm error_h/*
 #jljjlj
 set -m                  #enabling forcefully job control (necessary?)
-for i in {1..10}
+for i in {1..5}
 do
 sleep 10
 python3 jiggling.py $i 8&

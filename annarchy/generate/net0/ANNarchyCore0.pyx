@@ -3,15 +3,14 @@ from cpython.exc cimport PyErr_CheckSignals
 from libcpp.vector cimport vector
 from libcpp.map cimport map, pair
 from libcpp cimport bool
-from libcpp.string cimport string
 from math import ceil
 import numpy as np
 import sys
 cimport numpy as np
-cimport cython
 
 import ANNarchy
 from ANNarchy.core.cython_ext.Connector cimport LILConnectivity as LIL
+from ANNarchy.core.cython_ext.Connector cimport CSRConnectivity, CSRConnectivityPre1st
 
 cdef extern from "ANNarchy.h":
 
@@ -161,34 +160,24 @@ cdef extern from "ANNarchy.h":
         int nb_synapses(int)
         void set_size(int)
 
-        # Connectivity
-        void init_from_lil(vector[int], vector[vector[int]], vector[vector[double]], vector[vector[int]])
-        # Access connectivity
+
+        # LIL Connectivity
         vector[int] get_post_rank()
-        vector[vector[int]] get_pre_ranks()
-        vector[int] get_dendrite_pre_rank(int)
+        vector[vector[int]] get_pre_rank()
+        void set_post_rank(vector[int])
+        void set_pre_rank(vector[vector[int]])
+        void inverse_connectivity_matrix()
+
+        # Local variable w
+        vector[vector[double]] get_w()
+        vector[double] get_dendrite_w(int)
+        double get_synapse_w(int, int)
+        void set_w(vector[vector[double]])
+        void set_dendrite_w(int, vector[double])
+        void set_synapse_w(int, int, double)
 
 
 
-
-
-        # Local Attributes
-        vector[vector[double]] get_local_attribute_all(string)
-        vector[double] get_local_attribute_row(string, int)
-        double get_local_attribute(string, int, int)
-        void set_local_attribute_all(string, vector[vector[double]])
-        void set_local_attribute_row(string, int, vector[double])
-        void set_local_attribute(string, int, int, double)
-
-        # Semiglobal Attributes
-        vector[double] get_semiglobal_attribute_all(string)
-        double get_semiglobal_attribute(string, int)
-        void set_semiglobal_attribute_all(string, vector[double])
-        void set_semiglobal_attribute(string, int, double)
-
-        # Global Attributes
-        double get_global_attribute(string)
-        void set_global_attribute(string, double)
 
 
 
@@ -211,34 +200,64 @@ cdef extern from "ANNarchy.h":
         int nb_synapses(int)
         void set_size(int)
 
-        # Connectivity
-        void init_from_lil(vector[int], vector[vector[int]], vector[vector[double]], vector[vector[int]])
-        # Access connectivity
+
+        # LIL Connectivity
         vector[int] get_post_rank()
-        vector[vector[int]] get_pre_ranks()
-        vector[int] get_dendrite_pre_rank(int)
+        vector[vector[int]] get_pre_rank()
+        void set_post_rank(vector[int])
+        void set_pre_rank(vector[vector[int]])
+        void inverse_connectivity_matrix()
+
+        # Local variable w
+        vector[vector[double]] get_w()
+        vector[double] get_dendrite_w(int)
+        double get_synapse_w(int, int)
+        void set_w(vector[vector[double]])
+        void set_dendrite_w(int, vector[double])
+        void set_synapse_w(int, int, double)
 
 
 
 
+        # Global parameter effective_eta
+        double get_effective_eta()
+        void set_effective_eta(double)
 
-        # Local Attributes
-        vector[vector[double]] get_local_attribute_all(string)
-        vector[double] get_local_attribute_row(string, int)
-        double get_local_attribute(string, int, int)
-        void set_local_attribute_all(string, vector[vector[double]])
-        void set_local_attribute_row(string, int, vector[double])
-        void set_local_attribute(string, int, int, double)
+        # Global parameter learning_phase
+        double get_learning_phase()
+        void set_learning_phase(double)
 
-        # Semiglobal Attributes
-        vector[double] get_semiglobal_attribute_all(string)
-        double get_semiglobal_attribute(string, int)
-        void set_semiglobal_attribute_all(string, vector[double])
-        void set_semiglobal_attribute(string, int, double)
+        # Global parameter error
+        double get_error()
+        void set_error(double)
 
-        # Global Attributes
-        double get_global_attribute(string)
-        void set_global_attribute(string, double)
+        # Global parameter mean_error
+        double get_mean_error()
+        void set_mean_error(double)
+
+        # Global parameter mean_mean_error
+        double get_mean_mean_error()
+        void set_mean_mean_error(double)
+
+        # Global parameter max_weight_change
+        double get_max_weight_change()
+        void set_max_weight_change(double)
+
+        # Local variable trace
+        vector[vector[double]] get_trace()
+        vector[double] get_dendrite_trace(int)
+        double get_synapse_trace(int, int)
+        void set_trace(vector[vector[double]])
+        void set_dendrite_trace(int, vector[double])
+        void set_synapse_trace(int, int, double)
+
+        # Local variable delta_w
+        vector[vector[double]] get_delta_w()
+        vector[double] get_dendrite_delta_w(int)
+        double get_synapse_delta_w(int, int)
+        void set_delta_w(vector[vector[double]])
+        void set_dendrite_delta_w(int, vector[double])
+        void set_synapse_delta_w(int, int, double)
 
 
 
@@ -247,7 +266,6 @@ cdef extern from "ANNarchy.h":
         # memory management
         long int size_in_bytes()
         void clear()
-
 
 
     # Monitors
@@ -260,13 +278,9 @@ cdef extern from "ANNarchy.h":
     void addRecorder(Monitor*)
     void removeRecorder(Monitor*)
 
-
     # Population 0 (pop0) : Monitor
     cdef cppclass PopRecorder0 (Monitor):
-        @staticmethod
-        int create_instance(vector[int], int, int, long)
-        @staticmethod
-        PopRecorder0* get_instance(int)
+        PopRecorder0(vector[int], int, int, long) except +
         long int size_in_bytes()
         void clear()
 
@@ -276,10 +290,7 @@ cdef extern from "ANNarchy.h":
         # Targets
     # Population 1 (pop1) : Monitor
     cdef cppclass PopRecorder1 (Monitor):
-        @staticmethod
-        int create_instance(vector[int], int, int, long)
-        @staticmethod
-        PopRecorder1* get_instance(int)
+        PopRecorder1(vector[int], int, int, long) except +
         long int size_in_bytes()
         void clear()
 
@@ -328,20 +339,14 @@ cdef extern from "ANNarchy.h":
 
     # Projection 0 : Monitor
     cdef cppclass ProjRecorder0 (Monitor):
-        @staticmethod
-        int create_instance(vector[int], int, int, long)
-        @staticmethod
-        ProjRecorder0* get_instance(int)
+        ProjRecorder0(vector[int], int, int, long) except +
 
         vector[vector[vector[double]]] w
         bool record_w
 
     # Projection 1 : Monitor
     cdef cppclass ProjRecorder1 (Monitor):
-        @staticmethod
-        int create_instance(vector[int], int, int, long)
-        @staticmethod
-        ProjRecorder1* get_instance(int)
+        ProjRecorder1(vector[int], int, int, long) except +
 
         vector[double] effective_eta
         bool record_effective_eta
@@ -380,9 +385,9 @@ cdef extern from "ANNarchy.h":
     ProjStruct1 proj1
 
     # Methods
-    void initialize(double)
+    void initialize(double, long)
     void init_rng_dist()
-    void setSeed(long, int, bool)
+    void setSeed(long)
     void run(int nbSteps) nogil
     int run_until(int steps, vector[int] populations, bool or_and)
     void step()
@@ -397,16 +402,15 @@ cdef extern from "ANNarchy.h":
 
 
     # Number of threads
-    void setNumberThreads(int, vector[int])
+    void setNumberThreads(int)
 
 
 # Population wrappers
 
 # Wrapper for population 0 (pop0)
-@cython.auto_pickle(True)
 cdef class pop0_wrapper :
 
-    def __init__(self, size, max_delay):
+    def __cinit__(self, size, max_delay):
 
         pop0.set_size(size)
         pop0.set_max_delay(max_delay)
@@ -453,10 +457,9 @@ cdef class pop0_wrapper :
         return pop0.clear()
 
 # Wrapper for population 1 (pop1)
-@cython.auto_pickle(True)
 cdef class pop1_wrapper :
 
-    def __init__(self, size, max_delay):
+    def __cinit__(self, size, max_delay):
 
         pop1.set_size(size)
         pop1.set_max_delay(max_delay)
@@ -604,15 +607,20 @@ cdef class pop1_wrapper :
 # Projection wrappers
 
 # Wrapper for projection 0
-@cython.auto_pickle(True)
 cdef class proj0_wrapper :
 
-    def __init__(self, ):
-                    pass
+    def __cinit__(self, synapses):
+
+        cdef LIL syn = synapses
+        cdef int size = syn.size
+        cdef int nb_post = syn.post_rank.size()
+        proj0.set_size( size )
+        proj0.set_post_rank( syn.post_rank )
+        proj0.set_pre_rank( syn.pre_rank )
+
+        proj0.set_w(syn.w)
 
 
-    def init_from_lil(self, synapses):
-        proj0.init_from_lil(synapses.post_rank, synapses.pre_rank, synapses.w, synapses.delay)
 
 
     property size:
@@ -652,68 +660,36 @@ cdef class proj0_wrapper :
     def _set_update_offset(self, long l):
         proj0._update_offset = l
 
-    # Access connectivity
 
+    # Connectivity
     def post_rank(self):
         return proj0.get_post_rank()
-    def pre_rank_all(self):
-        return proj0.get_pre_ranks()
+    def set_post_rank(self, val):
+        proj0.set_post_rank(val)
+        proj0.inverse_connectivity_matrix()
     def pre_rank(self, int n):
-        return proj0.get_dendrite_pre_rank(n)
+        return proj0.get_pre_rank()[n]
+    def pre_rank_all(self):
+        return proj0.get_pre_rank()
+    def set_pre_rank(self, val):
+        proj0.set_pre_rank(val)
+        proj0.inverse_connectivity_matrix()
+
+    # Local variable w
+    def get_w(self):
+        return proj0.get_w()
+    def set_w(self, value):
+        proj0.set_w( value )
+    def get_dendrite_w(self, int rank):
+        return proj0.get_dendrite_w(rank)
+    def set_dendrite_w(self, int rank, vector[double] value):
+        proj0.set_dendrite_w(rank, value)
+    def get_synapse_w(self, int rank_post, int rank_pre):
+        return proj0.get_synapse_w(rank_post, rank_pre)
+    def set_synapse_w(self, int rank_post, int rank_pre, double value):
+        proj0.set_synapse_w(rank_post, rank_pre, value)
 
 
-
-
-    # Local Attribute
-    def set_local_attribute_all(self, name, value):
-        cpp_string = name.encode('utf-8')
-        proj0.set_local_attribute_all(cpp_string, value)
-
-    def set_local_attribute_row(self, name, rk_post, value):
-        cpp_string = name.encode('utf-8')
-        proj0.set_local_attribute_row(cpp_string, rk_post, value)
-
-    def set_local_attribute(self, name, rk_post, rk_pre, value):
-        cpp_string = name.encode('utf-8')
-        proj0.set_local_attribute(cpp_string, rk_post, rk_pre, value)
-
-    def get_local_attribute_all(self, name):
-        cpp_string = name.encode('utf-8')
-        return proj0.get_local_attribute_all(cpp_string)
-
-    def get_local_attribute_row(self, name, rk_post):
-        cpp_string = name.encode('utf-8')
-        return proj0.get_local_attribute_row(cpp_string, rk_post)
-
-    def get_local_attribute(self, name, rk_post, rk_pre):
-        cpp_string = name.encode('utf-8')
-        return proj0.get_local_attribute(cpp_string, rk_post, rk_pre)
-
-    # Semiglobal Attributes
-    def get_semiglobal_attribute_all(self, name):
-        cpp_string = name.encode('utf-8')
-        return proj0.get_semiglobal_attribute_all(cpp_string)
-
-    def get_semiglobal_attribute(self, name, rk_post):
-        cpp_string = name.encode('utf-8')
-        return proj0.get_semiglobal_attribute(cpp_string, rk_post)
-
-    def set_semiglobal_attribute_all(self, name, value):
-        cpp_string = name.encode('utf-8')
-        proj0.set_semiglobal_attribute_all(cpp_string, value)
-
-    def set_semiglobal_attribute(self, name, rk_post, value):
-        cpp_string = name.encode('utf-8')
-        proj0.set_semiglobal_attribute(cpp_string, rk_post, value)
-
-    # Global Attributes
-    def get_global_attribute(self, name):
-        cpp_string = name.encode('utf-8')
-        return proj0.get_global_attribute(cpp_string)
-
-    def set_global_attribute(self, name, value):
-        cpp_string = name.encode('utf-8')
-        proj0.set_global_attribute(cpp_string, value)
 
 
 
@@ -727,15 +703,20 @@ cdef class proj0_wrapper :
         return proj0.clear()
 
 # Wrapper for projection 1
-@cython.auto_pickle(True)
 cdef class proj1_wrapper :
 
-    def __init__(self, ):
-                    pass
+    def __cinit__(self, synapses):
+
+        cdef LIL syn = synapses
+        cdef int size = syn.size
+        cdef int nb_post = syn.post_rank.size()
+        proj1.set_size( size )
+        proj1.set_post_rank( syn.post_rank )
+        proj1.set_pre_rank( syn.pre_rank )
+
+        proj1.set_w(syn.w)
 
 
-    def init_from_lil(self, synapses):
-        proj1.init_from_lil(synapses.post_rank, synapses.pre_rank, synapses.w, synapses.delay)
 
 
     property size:
@@ -775,68 +756,100 @@ cdef class proj1_wrapper :
     def _set_update_offset(self, long l):
         proj1._update_offset = l
 
-    # Access connectivity
 
+    # Connectivity
     def post_rank(self):
         return proj1.get_post_rank()
-    def pre_rank_all(self):
-        return proj1.get_pre_ranks()
+    def set_post_rank(self, val):
+        proj1.set_post_rank(val)
+        proj1.inverse_connectivity_matrix()
     def pre_rank(self, int n):
-        return proj1.get_dendrite_pre_rank(n)
+        return proj1.get_pre_rank()[n]
+    def pre_rank_all(self):
+        return proj1.get_pre_rank()
+    def set_pre_rank(self, val):
+        proj1.set_pre_rank(val)
+        proj1.inverse_connectivity_matrix()
+
+    # Local variable w
+    def get_w(self):
+        return proj1.get_w()
+    def set_w(self, value):
+        proj1.set_w( value )
+    def get_dendrite_w(self, int rank):
+        return proj1.get_dendrite_w(rank)
+    def set_dendrite_w(self, int rank, vector[double] value):
+        proj1.set_dendrite_w(rank, value)
+    def get_synapse_w(self, int rank_post, int rank_pre):
+        return proj1.get_synapse_w(rank_post, rank_pre)
+    def set_synapse_w(self, int rank_post, int rank_pre, double value):
+        proj1.set_synapse_w(rank_post, rank_pre, value)
 
 
 
+    # Global parameter effective_eta
+    def get_effective_eta(self):
+        return proj1.get_effective_eta()
+    def set_effective_eta(self, value):
+        proj1.set_effective_eta(value)
 
-    # Local Attribute
-    def set_local_attribute_all(self, name, value):
-        cpp_string = name.encode('utf-8')
-        proj1.set_local_attribute_all(cpp_string, value)
+    # Global parameter learning_phase
+    def get_learning_phase(self):
+        return proj1.get_learning_phase()
+    def set_learning_phase(self, value):
+        proj1.set_learning_phase(value)
 
-    def set_local_attribute_row(self, name, rk_post, value):
-        cpp_string = name.encode('utf-8')
-        proj1.set_local_attribute_row(cpp_string, rk_post, value)
+    # Global parameter error
+    def get_error(self):
+        return proj1.get_error()
+    def set_error(self, value):
+        proj1.set_error(value)
 
-    def set_local_attribute(self, name, rk_post, rk_pre, value):
-        cpp_string = name.encode('utf-8')
-        proj1.set_local_attribute(cpp_string, rk_post, rk_pre, value)
+    # Global parameter mean_error
+    def get_mean_error(self):
+        return proj1.get_mean_error()
+    def set_mean_error(self, value):
+        proj1.set_mean_error(value)
 
-    def get_local_attribute_all(self, name):
-        cpp_string = name.encode('utf-8')
-        return proj1.get_local_attribute_all(cpp_string)
+    # Global parameter mean_mean_error
+    def get_mean_mean_error(self):
+        return proj1.get_mean_mean_error()
+    def set_mean_mean_error(self, value):
+        proj1.set_mean_mean_error(value)
 
-    def get_local_attribute_row(self, name, rk_post):
-        cpp_string = name.encode('utf-8')
-        return proj1.get_local_attribute_row(cpp_string, rk_post)
+    # Global parameter max_weight_change
+    def get_max_weight_change(self):
+        return proj1.get_max_weight_change()
+    def set_max_weight_change(self, value):
+        proj1.set_max_weight_change(value)
 
-    def get_local_attribute(self, name, rk_post, rk_pre):
-        cpp_string = name.encode('utf-8')
-        return proj1.get_local_attribute(cpp_string, rk_post, rk_pre)
+    # Local variable trace
+    def get_trace(self):
+        return proj1.get_trace()
+    def set_trace(self, value):
+        proj1.set_trace( value )
+    def get_dendrite_trace(self, int rank):
+        return proj1.get_dendrite_trace(rank)
+    def set_dendrite_trace(self, int rank, vector[double] value):
+        proj1.set_dendrite_trace(rank, value)
+    def get_synapse_trace(self, int rank_post, int rank_pre):
+        return proj1.get_synapse_trace(rank_post, rank_pre)
+    def set_synapse_trace(self, int rank_post, int rank_pre, double value):
+        proj1.set_synapse_trace(rank_post, rank_pre, value)
 
-    # Semiglobal Attributes
-    def get_semiglobal_attribute_all(self, name):
-        cpp_string = name.encode('utf-8')
-        return proj1.get_semiglobal_attribute_all(cpp_string)
-
-    def get_semiglobal_attribute(self, name, rk_post):
-        cpp_string = name.encode('utf-8')
-        return proj1.get_semiglobal_attribute(cpp_string, rk_post)
-
-    def set_semiglobal_attribute_all(self, name, value):
-        cpp_string = name.encode('utf-8')
-        proj1.set_semiglobal_attribute_all(cpp_string, value)
-
-    def set_semiglobal_attribute(self, name, rk_post, value):
-        cpp_string = name.encode('utf-8')
-        proj1.set_semiglobal_attribute(cpp_string, rk_post, value)
-
-    # Global Attributes
-    def get_global_attribute(self, name):
-        cpp_string = name.encode('utf-8')
-        return proj1.get_global_attribute(cpp_string)
-
-    def set_global_attribute(self, name, value):
-        cpp_string = name.encode('utf-8')
-        proj1.set_global_attribute(cpp_string, value)
+    # Local variable delta_w
+    def get_delta_w(self):
+        return proj1.get_delta_w()
+    def set_delta_w(self, value):
+        proj1.set_delta_w( value )
+    def get_dendrite_delta_w(self, int rank):
+        return proj1.get_dendrite_delta_w(rank)
+    def set_dendrite_delta_w(self, int rank, vector[double] value):
+        proj1.set_dendrite_delta_w(rank, value)
+    def get_synapse_delta_w(self, int rank_post, int rank_pre):
+        return proj1.get_synapse_delta_w(rank_post, rank_pre)
+    def set_synapse_delta_w(self, int rank_post, int rank_pre, double value):
+        proj1.set_synapse_delta_w(rank_post, rank_pre, value)
 
 
 
@@ -851,267 +864,289 @@ cdef class proj1_wrapper :
 
 
 # Monitor wrappers
+cdef class Monitor_wrapper:
+    cdef Monitor *thisptr
+    def __cinit__(self, list ranks, int period, int period_offset, long offset):
+        pass
+    property ranks:
+        def __get__(self): return self.thisptr.ranks
+        def __set__(self, val): self.thisptr.ranks = val
+    property period:
+        def __get__(self): return self.thisptr.period_
+        def __set__(self, val): self.thisptr.period_ = val
+    property offset:
+        def __get__(self): return self.thisptr.offset_
+        def __set__(self, val): self.thisptr.offset_ = val
+    property period_offset:
+        def __get__(self): return self.thisptr.period_offset_
+        def __set__(self, val): self.thisptr.period_offset_ = val
+
+def add_recorder(Monitor_wrapper recorder):
+    addRecorder(recorder.thisptr)
+def remove_recorder(Monitor_wrapper recorder):
+    removeRecorder(recorder.thisptr)
+
 
 # Population Monitor wrapper
-@cython.auto_pickle(True)
-cdef class PopRecorder0_wrapper:
-    cdef int id
-    def __init__(self, list ranks, int period, period_offset, long offset):
-        self.id = PopRecorder0.create_instance(ranks, period, period_offset, offset)
+cdef class PopRecorder0_wrapper(Monitor_wrapper):
+    def __cinit__(self, list ranks, int period, period_offset, long offset):
+        self.thisptr = new PopRecorder0(ranks, period, period_offset, offset)
 
     def size_in_bytes(self):
-        return (PopRecorder0.get_instance(self.id)).size_in_bytes()
+        return (<PopRecorder0 *>self.thisptr).size_in_bytes()
+
+    def clear(self):
+        (<PopRecorder0 *>self.thisptr).clear()
+
 
     property r:
-        def __get__(self): return (PopRecorder0.get_instance(self.id)).r
-        def __set__(self, val): (PopRecorder0.get_instance(self.id)).r = val
+        def __get__(self): return (<PopRecorder0 *>self.thisptr).r
+        def __set__(self, val): (<PopRecorder0 *>self.thisptr).r = val
     property record_r:
-        def __get__(self): return (PopRecorder0.get_instance(self.id)).record_r
-        def __set__(self, val): (PopRecorder0.get_instance(self.id)).record_r = val
+        def __get__(self): return (<PopRecorder0 *>self.thisptr).record_r
+        def __set__(self, val): (<PopRecorder0 *>self.thisptr).record_r = val
     def clear_r(self):
-        (PopRecorder0.get_instance(self.id)).r.clear()
+        (<PopRecorder0 *>self.thisptr).r.clear()
 
     # Targets
 # Population Monitor wrapper
-@cython.auto_pickle(True)
-cdef class PopRecorder1_wrapper:
-    cdef int id
-    def __init__(self, list ranks, int period, period_offset, long offset):
-        self.id = PopRecorder1.create_instance(ranks, period, period_offset, offset)
+cdef class PopRecorder1_wrapper(Monitor_wrapper):
+    def __cinit__(self, list ranks, int period, period_offset, long offset):
+        self.thisptr = new PopRecorder1(ranks, period, period_offset, offset)
 
     def size_in_bytes(self):
-        return (PopRecorder1.get_instance(self.id)).size_in_bytes()
+        return (<PopRecorder1 *>self.thisptr).size_in_bytes()
+
+    def clear(self):
+        (<PopRecorder1 *>self.thisptr).clear()
+
 
     property tau:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).tau
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).tau = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).tau
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).tau = val
     property record_tau:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_tau
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_tau = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_tau
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_tau = val
     def clear_tau(self):
-        (PopRecorder1.get_instance(self.id)).tau.clear()
+        (<PopRecorder1 *>self.thisptr).tau.clear()
 
     property constant:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).constant
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).constant = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).constant
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).constant = val
     property record_constant:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_constant
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_constant = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_constant
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_constant = val
     def clear_constant(self):
-        (PopRecorder1.get_instance(self.id)).constant.clear()
+        (<PopRecorder1 *>self.thisptr).constant.clear()
 
     property alpha:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).alpha
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).alpha = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).alpha
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).alpha = val
     property record_alpha:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_alpha
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_alpha = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_alpha
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_alpha = val
     def clear_alpha(self):
-        (PopRecorder1.get_instance(self.id)).alpha.clear()
+        (<PopRecorder1 *>self.thisptr).alpha.clear()
 
     property f:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).f
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).f = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).f
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).f = val
     property record_f:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_f
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_f = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_f
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_f = val
     def clear_f(self):
-        (PopRecorder1.get_instance(self.id)).f.clear()
+        (<PopRecorder1 *>self.thisptr).f.clear()
 
     property A:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).A
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).A = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).A
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).A = val
     property record_A:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_A
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_A = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_A
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_A = val
     def clear_A(self):
-        (PopRecorder1.get_instance(self.id)).A.clear()
+        (<PopRecorder1 *>self.thisptr).A.clear()
 
     property perturbation:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).perturbation
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).perturbation = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).perturbation
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).perturbation = val
     property record_perturbation:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_perturbation
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_perturbation = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_perturbation
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_perturbation = val
     def clear_perturbation(self):
-        (PopRecorder1.get_instance(self.id)).perturbation.clear()
+        (<PopRecorder1 *>self.thisptr).perturbation.clear()
 
     property noise:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).noise
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).noise = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).noise
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).noise = val
     property record_noise:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_noise
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_noise = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_noise
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_noise = val
     def clear_noise(self):
-        (PopRecorder1.get_instance(self.id)).noise.clear()
+        (<PopRecorder1 *>self.thisptr).noise.clear()
 
     property x:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).x
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).x = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).x
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).x = val
     property record_x:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_x
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_x = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_x
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_x = val
     def clear_x(self):
-        (PopRecorder1.get_instance(self.id)).x.clear()
+        (<PopRecorder1 *>self.thisptr).x.clear()
 
     property rprev:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).rprev
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).rprev = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).rprev
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).rprev = val
     property record_rprev:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_rprev
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_rprev = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_rprev
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_rprev = val
     def clear_rprev(self):
-        (PopRecorder1.get_instance(self.id)).rprev.clear()
+        (<PopRecorder1 *>self.thisptr).rprev.clear()
 
     property r:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).r
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).r = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).r
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).r = val
     property record_r:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_r
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_r = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_r
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_r = val
     def clear_r(self):
-        (PopRecorder1.get_instance(self.id)).r.clear()
+        (<PopRecorder1 *>self.thisptr).r.clear()
 
     property delta_x:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).delta_x
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).delta_x = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).delta_x
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).delta_x = val
     property record_delta_x:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_delta_x
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_delta_x = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_delta_x
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_delta_x = val
     def clear_delta_x(self):
-        (PopRecorder1.get_instance(self.id)).delta_x.clear()
+        (<PopRecorder1 *>self.thisptr).delta_x.clear()
 
     property x_mean:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).x_mean
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).x_mean = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).x_mean
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).x_mean = val
     property record_x_mean:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record_x_mean
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record_x_mean = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record_x_mean
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record_x_mean = val
     def clear_x_mean(self):
-        (PopRecorder1.get_instance(self.id)).x_mean.clear()
+        (<PopRecorder1 *>self.thisptr).x_mean.clear()
 
     # Targets
     property _sum_exc:
-        def __get__(self): return (PopRecorder1.get_instance(self.id))._sum_exc
-        def __set__(self, val): (PopRecorder1.get_instance(self.id))._sum_exc = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr)._sum_exc
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr)._sum_exc = val
     property record__sum_exc:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record__sum_exc
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record__sum_exc = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record__sum_exc
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record__sum_exc = val
     def clear__sum_exc(self):
-        (PopRecorder1.get_instance(self.id))._sum_exc.clear()
+        (<PopRecorder1 *>self.thisptr)._sum_exc.clear()
 
     property _sum_in:
-        def __get__(self): return (PopRecorder1.get_instance(self.id))._sum_in
-        def __set__(self, val): (PopRecorder1.get_instance(self.id))._sum_in = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr)._sum_in
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr)._sum_in = val
     property record__sum_in:
-        def __get__(self): return (PopRecorder1.get_instance(self.id)).record__sum_in
-        def __set__(self, val): (PopRecorder1.get_instance(self.id)).record__sum_in = val
+        def __get__(self): return (<PopRecorder1 *>self.thisptr).record__sum_in
+        def __set__(self, val): (<PopRecorder1 *>self.thisptr).record__sum_in = val
     def clear__sum_in(self):
-        (PopRecorder1.get_instance(self.id))._sum_in.clear()
+        (<PopRecorder1 *>self.thisptr)._sum_in.clear()
 
 # Projection Monitor wrapper
-@cython.auto_pickle(True)
-cdef class ProjRecorder0_wrapper:
-    cdef int id
-    def __init__(self, list ranks, int period, int period_offset, long offset):
-        self.id = ProjRecorder0.create_instance(ranks, period, period_offset, offset)
+cdef class ProjRecorder0_wrapper(Monitor_wrapper):
+    def __cinit__(self, list ranks, int period, int period_offset, long offset):
+        self.thisptr = new ProjRecorder0(ranks, period, period_offset, offset)
 
     property w:
-        def __get__(self): return (ProjRecorder0.get_instance(self.id)).w
-        def __set__(self, val): (ProjRecorder0.get_instance(self.id)).w = val
+        def __get__(self): return (<ProjRecorder0 *>self.thisptr).w
+        def __set__(self, val): (<ProjRecorder0 *>self.thisptr).w = val
     property record_w:
-        def __get__(self): return (ProjRecorder0.get_instance(self.id)).record_w
-        def __set__(self, val): (ProjRecorder0.get_instance(self.id)).record_w = val
+        def __get__(self): return (<ProjRecorder0 *>self.thisptr).record_w
+        def __set__(self, val): (<ProjRecorder0 *>self.thisptr).record_w = val
     def clear_w(self):
-        (ProjRecorder0.get_instance(self.id)).w.clear()
+        (<ProjRecorder0 *>self.thisptr).w.clear()
 
 # Projection Monitor wrapper
-@cython.auto_pickle(True)
-cdef class ProjRecorder1_wrapper:
-    cdef int id
-    def __init__(self, list ranks, int period, int period_offset, long offset):
-        self.id = ProjRecorder1.create_instance(ranks, period, period_offset, offset)
+cdef class ProjRecorder1_wrapper(Monitor_wrapper):
+    def __cinit__(self, list ranks, int period, int period_offset, long offset):
+        self.thisptr = new ProjRecorder1(ranks, period, period_offset, offset)
 
     property effective_eta:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).effective_eta
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).effective_eta = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).effective_eta
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).effective_eta = val
     property record_effective_eta:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_effective_eta
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_effective_eta = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_effective_eta
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_effective_eta = val
     def clear_effective_eta(self):
-        (ProjRecorder1.get_instance(self.id)).effective_eta.clear()
+        (<ProjRecorder1 *>self.thisptr).effective_eta.clear()
 
     property learning_phase:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).learning_phase
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).learning_phase = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).learning_phase
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).learning_phase = val
     property record_learning_phase:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_learning_phase
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_learning_phase = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_learning_phase
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_learning_phase = val
     def clear_learning_phase(self):
-        (ProjRecorder1.get_instance(self.id)).learning_phase.clear()
+        (<ProjRecorder1 *>self.thisptr).learning_phase.clear()
 
     property error:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).error
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).error = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).error
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).error = val
     property record_error:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_error
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_error = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_error
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_error = val
     def clear_error(self):
-        (ProjRecorder1.get_instance(self.id)).error.clear()
+        (<ProjRecorder1 *>self.thisptr).error.clear()
 
     property mean_error:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).mean_error
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).mean_error = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).mean_error
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).mean_error = val
     property record_mean_error:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_mean_error
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_mean_error = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_mean_error
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_mean_error = val
     def clear_mean_error(self):
-        (ProjRecorder1.get_instance(self.id)).mean_error.clear()
+        (<ProjRecorder1 *>self.thisptr).mean_error.clear()
 
     property mean_mean_error:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).mean_mean_error
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).mean_mean_error = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).mean_mean_error
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).mean_mean_error = val
     property record_mean_mean_error:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_mean_mean_error
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_mean_mean_error = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_mean_mean_error
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_mean_mean_error = val
     def clear_mean_mean_error(self):
-        (ProjRecorder1.get_instance(self.id)).mean_mean_error.clear()
+        (<ProjRecorder1 *>self.thisptr).mean_mean_error.clear()
 
     property max_weight_change:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).max_weight_change
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).max_weight_change = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).max_weight_change
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).max_weight_change = val
     property record_max_weight_change:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_max_weight_change
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_max_weight_change = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_max_weight_change
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_max_weight_change = val
     def clear_max_weight_change(self):
-        (ProjRecorder1.get_instance(self.id)).max_weight_change.clear()
+        (<ProjRecorder1 *>self.thisptr).max_weight_change.clear()
 
     property trace:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).trace
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).trace = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).trace
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).trace = val
     property record_trace:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_trace
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_trace = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_trace
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_trace = val
     def clear_trace(self):
-        (ProjRecorder1.get_instance(self.id)).trace.clear()
+        (<ProjRecorder1 *>self.thisptr).trace.clear()
 
     property delta_w:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).delta_w
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).delta_w = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).delta_w
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).delta_w = val
     property record_delta_w:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_delta_w
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_delta_w = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_delta_w
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_delta_w = val
     def clear_delta_w(self):
-        (ProjRecorder1.get_instance(self.id)).delta_w.clear()
+        (<ProjRecorder1 *>self.thisptr).delta_w.clear()
 
     property w:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).w
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).w = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).w
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).w = val
     property record_w:
-        def __get__(self): return (ProjRecorder1.get_instance(self.id)).record_w
-        def __set__(self, val): (ProjRecorder1.get_instance(self.id)).record_w = val
+        def __get__(self): return (<ProjRecorder1 *>self.thisptr).record_w
+        def __set__(self, val): (<ProjRecorder1 *>self.thisptr).record_w = val
     def clear_w(self):
-        (ProjRecorder1.get_instance(self.id)).w.clear()
+        (<ProjRecorder1 *>self.thisptr).w.clear()
 
 
 # User-defined functions
@@ -1121,8 +1156,8 @@ cdef class ProjRecorder1_wrapper:
 
 
 # Initialize the network
-def pyx_create(double dt):
-    initialize(dt)
+def pyx_create(double dt, long seed):
+    initialize(dt, seed)
 
 def pyx_init_rng_dist():
     init_rng_dist()
@@ -1192,10 +1227,10 @@ def get_dt():
 
 
 # Set number of threads
-def set_number_threads(int n, core_list):
-    setNumberThreads(n, core_list)
+def set_number_threads(int n):
+    setNumberThreads(n)
 
 
 # Set seed
-def set_seed(long seed, int num_sources, use_seed_seq):
-    setSeed(seed, num_sources, use_seed_seq)
+def set_seed(long seed):
+    setSeed(seed)
