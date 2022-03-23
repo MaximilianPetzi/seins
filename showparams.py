@@ -1,5 +1,5 @@
 ###
-
+justpars=True       #False, to color according to the errors
 
 #show todo and done in pyhton:
 import numpy as np
@@ -51,7 +51,7 @@ def get_cidx(par,Afolder):
     #convert into index
     return minerror
 
-Afolder="all"   
+Afolder="sA_20"   
 params=[]
 #only take those parameters of todo, that have at least the first simulation completed 
 for i in range(len(todo)):
@@ -66,13 +66,18 @@ params=np.array(params)
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 #0=A, 1=f, 2=eta
+if justpars:
+    params=todo
 print(np.shape(params[0]),np.shape(params[1]),np.shape(params[2]))
 
-cidxs=[get_cidx(para,Afolder) for para in params]
-#cidxs=(cidxs-np.min(cidxs))/(np.max(cidxs)-np.min(cidxs))
-#ax.scatter(params[:,0]+2,params[:,1],params[:,2],color="red")
-ppp=ax.scatter(params[:,0],params[:,1],params[:,2],c=cidxs,cmap=cm.rainbow)
-fig.colorbar(ppp)
+
+if justpars:
+    cidxs=1
+    ppp=ax.scatter(params[:,0],params[:,1],params[:,2])
+if not justpars:
+    cidxs=[get_cidx(para,Afolder) for para in params]
+    ppp=ax.scatter(params[:,0],params[:,1],params[:,2],c=cidxs,cmap=cm.rainbow)
+    fig.colorbar(ppp)
 #ax.scatter(params[:,0]-2,params[:,1],params[:,2],color="green")
 #ax.scatter(params[:,0]-4,params[:,1],params[:,2],color="blue")
 
