@@ -1,9 +1,13 @@
 import numpy as np
 N_here=800.
-
-dA=np.array([36,22,14,8,4])
-df=np.array([.4,1,3,8,18])
-deta=np.array([3,1,.3,.1,.02])
+#coarse_grid:
+#dA=np.array([36,22,14,8,4])
+#df=np.array([.4,1,3,8,18])
+#deta=np.array([3,1,.3,.1,.02])
+#fine_grid:
+dA=np.array([42,28,18,10])
+df=np.array([.15,.25,.7,2])
+deta=np.array([6,.5,.01])
 
 par0=np.zeros((0,4))
 for i in range(len(dA)):
