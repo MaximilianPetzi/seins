@@ -1,5 +1,5 @@
 ###
-justpars=False      #False, to color according to the errors
+colored=True      #False, to color according to the errors
 
 #show todo and done in pyhton:
 import numpy as np
@@ -12,8 +12,7 @@ print("todo: ",todo)
 print("done: ",done)
 ##### 
 
-#content={"todo":todo,"done":done}
-#np.save("paramfile.npy",content)
+#content={"todo":todo,"done":done};np.save("paramfile.npy",content)
 ####
 
 import matplotlib.pyplot as plt
@@ -24,7 +23,7 @@ def sliding_avg(array,alpha):
         ret.append(np.average(array[i:i+alpha],axis=0))
     return np.array(ret)
 
-Bfolder="collection/coarse_grid/"
+Bfolder="collection/both_grid/"
 
 def get_cidx(par,Afolder):
     print("______")
@@ -57,17 +56,18 @@ def get_cidx(par,Afolder):
     aAm=np.average(Am[:18],axis=0)  
     #minerror=np.min(aAm)
     minerror=np.min(sliding_avg(aAm,64))
+    enderror=np.average(aAm[-20:])
     #convert into index
-    return (minerror)**1
+    return (minerror)**.15
 
 Afolder="sA_20"   
 params=[]
-#only take those parameters of todo, that have at least the first simulation completed 
+#only take those parameters of todo that have at least the first simulation completed 
 for i in range(len(todo)):
     parr=todo[i]
     fname=str(parr[0])+"_"+str(parr[1])+"_"+str(parr[2])+"_"+str(parr[3])
     #print("dont append  ", "collection/"+Afolder+"/"+fname+"/1error.npy")
-    if os.path.isfile(Bfolder+"/"+fname+"/1error.npy"):
+    if os.path.isfile(Bfolder+"/"+fname+"/1error.npy") and parr[1]<2.5:
         params.append(parr)
 
 params=np.array(params)
@@ -76,14 +76,14 @@ fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 #0=A, 1=f, 2=eta
 
-if justpars:#then, use all parameters in todo, not just the simulated ones
+if not colored:#then, use all parameters in todo, not just the simulated ones
     params=todo
 
 
-if justpars:
+if not colored:
     cidxs=1
     ppp=ax.scatter(params[:,0],params[:,1],params[:,2])
-if not justpars:
+if colored:
     cidxs=[get_cidx(para,Afolder) for para in params]
     ppp=ax.scatter(params[:,0],params[:,1],params[:,2],c=cidxs,cmap=cm.rainbow)
     fig.colorbar(ppp)
