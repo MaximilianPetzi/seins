@@ -14,9 +14,9 @@ N=int(todo[0,3])
 print(str(todo[0,1]))
 print(str(todo[0,0]))
 
-etahere=1
-fhere=9
-Ahere=20
+etahere=3
+fhere=.4
+Ahere=22
 
 neuron = Neuron(
     #hier
