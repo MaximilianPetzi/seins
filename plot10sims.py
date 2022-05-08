@@ -15,19 +15,27 @@ os.system("rm bilder/plit_temp/*")
 nrt=10
 aAms=[]
 yerrs=[]
-#eta3_eta:
-strlist=["22.0_1.0_3.0_800.0/"]#,"22.0_0.4_1.0_800.0/","22.0_0.4_0.3_800.0/","22.0_0.4_0.1_800.0/","22.0_0.4_0.02_800.0/"]
-#eta3_f:
-#strlist=["22.0_0.4_3.0_800.0/","22.0_1.0_3.0_800.0/","22.0_3.0_3.0_800.0/","22.0_8.0_3.0_800.0/","22.0_18.0_3.0_800.0/",]
-#eta3_A:
-#strlist=["36.0_0.4_3.0_800.0/","22.0_0.4_3.0_800.0/","14.0_0.4_3.0_800.0/","8.0_0.4_3.0_800.0/","4.0_0.4_3.0_800.0/",]
 
-#eta.5_eta:
-#strlist=["42.0_0.15_6.0_800.0/","42.0_0.15_0.5_800.0/","42.0_0.15_0.01_800.0/"]
-#eta.5_f:
-#strlist=["42.0_0.15_0.5_800.0/","42.0_0.25_0.5_800.0/","42.0_0.7_0.5_800.0/","42.0_2.0_0.5_800.0/"]
+#(on coarse grid)
+
+#eta3_A:
+#strlist=["36.0_0.4_3.0_800.0/","22.0_0.4_3.0_800.0/","14.0_0.4_3.0_800.0/","8.0_0.4_3.0_800.0/","4.0_0.4_3.0_800.0/"]
+#eta3_f:
+strlist=["22.0_0.4_3.0_800.0/","22.0_1.0_3.0_800.0/","22.0_3.0_3.0_800.0/","22.0_8.0_3.0_800.0/","22.0_18.0_3.0_800.0/"]
+#eta3_eta:  
+#strlist=["22.0_0.4_3.0_800.0/","22.0_0.4_1.0_800.0/","22.0_0.4_0.3_800.0/","22.0_0.4_0.1_800.0/","22.0_0.4_0.02_800.0/"]
+
+#(on fine grid)
 #eta.5_A:
 #strlist=["90.0_0.15_0.5_800.0/","60.0_0.15_0.5_800.0/","42.0_0.15_0.5_800.0/","28.0_0.15_0.5_800.0/","18.0_0.15_0.5_800.0/","10.0_0.15_0.5_800.0/"]
+#eta.5_f:
+#strlist=["42.0_0.15_0.5_800.0/","42.0_0.25_0.5_800.0/","42.0_0.7_0.5_800.0/","42.0_2.0_0.5_800.0/"]
+#eta.5_eta:
+#strlist=["42.0_0.15_6.0_800.0/","42.0_0.15_0.5_800.0/","42.0_0.15_0.01_800.0/"]
+
+#for g:
+#strlist=["22.0_0.4_3.0_800.0/"]
+
 for tracker in range(len(strlist)):
     am = []
     am2=[]
@@ -77,48 +85,68 @@ for tracker in range(len(strlist)):
 #print("shapes aAms[i]:",np.shape(aAms[0]),np.shape(aAms[1]),np.shape(aAms[2]),np.shape(aAms[3]),np.shape(aAms[4]))
 
 swindow=1
-#plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="$\eta$=3.0")
-#plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="$\eta$=1.0")
-#plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="$\eta$=0.3")
-#plt.plot(sliding_avg(aAms[3],swindow),color="orange",linewidth=.6,label="$\eta$=0.1")
-#plt.plot(sliding_avg(aAms[4],swindow),color="red",linewidth=0.6,label="$\eta$=0.02")
-
-#plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="f=0.4")
-#plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="f=1")
-#plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="f=3")
-#plt.plot(sliding_avg(aAms[3],swindow),color="orange",linewidth=.6,label="f=8")
-#plt.plot(sliding_avg(aAms[4],swindow),color="red",linewidth=0.6,label="f=18")
+print(np.shape(aAms))
+aAms=np.array(aAms)#this is the error
+aAms_unaveraged=aAms[0]
+aAms=np.average(aAms,axis=1)
+#for coarse grid:
+print(np.shape(aAms))
 
 #plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="A=36")
 #plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="A=22")
 #plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="A=14")
 #plt.plot(sliding_avg(aAms[3],swindow),color="orange",linewidth=.6,label="A=8")
 #plt.plot(sliding_avg(aAms[4],swindow),color="red",linewidth=0.6,label="A=4")
+
+plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="f=0.4")
+plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="f=1")
+plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="f=3")
+plt.plot(sliding_avg(aAms[3],swindow),color="orange",linewidth=.6,label="f=8")
+plt.plot(sliding_avg(aAms[4],swindow),color="red",linewidth=.6,label="f=18")
+
+#plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="$\eta$=3.0")
+#plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="$\eta$=1.0")
+#plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="$\eta$=0.3")
+#plt.plot(sliding_avg(aAms[3],swindow),color="orange",linewidth=.6,label="$\eta$=0.1")
+#plt.plot(sliding_avg(aAms[4],swindow),color="red",linewidth=0.6,label="$\eta$=0.02")
+
 ###########################################################################################
-#plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="$\eta$=6.0")
-#plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="$\eta$=0.5")
-#plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="$\eta$=0.01")
+#for fine grid:
+#plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.5,label="A=90")
+#plt.plot(sliding_avg(aAms[1],swindow),color="blue",linewidth=.5,label="A=60")
+#plt.plot(sliding_avg(aAms[2],swindow),color="green",linewidth=.5,label="A=42")
+#plt.plot(sliding_avg(aAms[3],swindow),color="yellow",linewidth=.9,label="A=28")
+#plt.plot(sliding_avg(aAms[4],swindow),color="orange",linewidth=.5,label="A=18")
+#plt.plot(sliding_avg(aAms[5],swindow),color="red",linewidth=.5,label="A=10")
 
 #plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="f=0.15")
 #plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="f=0.25")
 #plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="f=0.7")
 #plt.plot(sliding_avg(aAms[3],swindow),color="orange",linewidth=.6,label="f=2")
 
-aAmss=aAms[0]
-#aAmss_avg=np.average(aAmss,axis=0)
-aAm2=am
-#aAm2=np.average(am,axis=0)
-print(np.shape(aAms[0]),np.shape(aAm2))
-plt.plot(sliding_avg(aAmss[0],swindow),color="black",linewidth=.5)#,label="A=90")
-plt.plot(sliding_avg(aAmss[1],swindow),color="blue",linewidth=.5)#,label="A=60")
-plt.plot(sliding_avg(aAmss[2],swindow),color="green",linewidth=.5)#,label="A=42")
+#plt.plot(sliding_avg(aAms[0],swindow),color="black",linewidth=.6,label="$\eta$=6.0")
+#plt.plot(sliding_avg(aAms[1],swindow),color="green",linewidth=.6,label="$\eta$=0.5")
+#plt.plot(sliding_avg(aAms[2],swindow),color="yellow",linewidth=.9,label="$\eta$=0.01")
 
-plt.plot(sliding_avg(aAm2[0],swindow),color="black",linestyle="-",linewidth=.5)#,label="A=90")
-plt.plot(sliding_avg(aAm2[1],swindow),color="blue",linestyle="-",linewidth=.5)#,label="A=60")
-plt.plot(sliding_avg(aAm2[2],swindow),color="green",linestyle="-",linewidth=.5)#,label="A=42")
-#plt.plot(sliding_avg(aAms[0][3],swindow),color="red",linewidth=.5)#,label="A=28")
-#plt.plot(sliding_avg(aAms[0][4],swindow),color="yellow",linewidth=.5)#,label="A=18")
-#plt.plot(sliding_avg(aAms[0][5],swindow),color="orange",linewidth=.5)#,label="A=10")
+#aAmss_avg=np.average(aAmss,axis=0)
+aAm2=am2    #this is g
+#aAm2=np.average(am,axis=0)
+
+#to plot g graphs:
+#plt.plot(sliding_avg(aAm2[0],swindow),color="black",linestyle="-.",linewidth=1)
+#plt.plot(sliding_avg(aAm2[1],swindow),color="blue",linestyle="-.",linewidth=1)
+#plt.plot(sliding_avg(aAm2[2],swindow),color="green",linestyle="-.",linewidth=1)
+#plt.plot(sliding_avg(aAm2[3],swindow),color="yellow",linestyle="-.",linewidth=1.3)
+#plt.plot(sliding_avg(aAm2[4],swindow),color="orange",linestyle="-.",linewidth=1)
+#plt.plot(sliding_avg(aAm2[5],swindow),color="red",linestyle="-.",linewidth=1)
+
+#to plot errors graphs for the  graphs
+#plt.plot(sliding_avg(aAms_unaveraged[0],swindow),color="black",linewidth=.6)
+#plt.plot(sliding_avg(aAms_unaveraged[1],swindow),color="blue",linewidth=.6)
+#plt.plot(sliding_avg(aAms_unaveraged[2],swindow),color="green",linewidth=.6)
+#plt.plot(sliding_avg(aAms_unaveraged[3],swindow),color="yellow",linewidth=.9)
+#plt.plot(sliding_avg(aAms_unaveraged[4],swindow),color="orange",linewidth=.6)
+#plt.plot(sliding_avg(aAms_unaveraged[5],swindow),color="red",linewidth=.6)
 
 #plt.errorbar(x=range(len(aAms[3])),y=aAms[3], yerr=yerrs[3],color=(1,.5,0,.2),elinewidth=.5)
 linex=np.array([40,40])

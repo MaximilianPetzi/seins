@@ -26,11 +26,13 @@ neuron = Neuron(
         alpha = 0.05 : population # To compute the sliding mean 0.05
         f = """+str(fhere)+""": population # Frequency of the perturbation 3/9
         A = """+str(Ahere)+""": population # Perturbation amplitude. dt*A/tau should be 0.5... original=16/20
+        
     """,
     equations="""
         # Perturbation
         perturbation = if Uniform(0.0, 1.0) < f/1000.: 1.0 else: 0.0 
         noise = if perturbation > 0.5: A*Uniform(-1.0, 1.0) else: 0.0
+        
 
         # ODE for x
         x += dt*(sum(in) + sum(exc) - x + noise)/tau
@@ -125,7 +127,7 @@ R_mean_mean=np.zeros(100)
 alpha = 0.33 #0.75 0.33 
 alpha2=0.01
 
-m = Monitor(pop,['r'])
+m = Monitor(pop,['r',"noise"])
 #mp = Monitor(pop,['r'])
 #mi = Monitor(inp_e,['r'])
 #mp = Monitor(pop,['r'])

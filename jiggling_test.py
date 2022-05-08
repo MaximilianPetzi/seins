@@ -23,7 +23,7 @@ import matplotlib.cm as cm
 
 sim = 1#sys.argv[1]
 num_goals=8#int(sys.argv[2])
-num_trials = num_goals* 5000 #34 für pca e.g.
+num_trials = num_goals* 1000 #34 für pca e.g.
 print("num_trials=",num_trials)
 
 print("start sim=",sim)
@@ -175,10 +175,12 @@ goal_history = np.zeros((num_goals, 3))
 for i in range(num_goals):
     goal_history[i] = random_goal(initial_position)
 
-g_growth=1
+g_growth=1  #1=neutral
 #Wrec.effectvie_eta=1.0
 whist=[]
 rRhist=[]
+noises=[]
+
 for t in range(num_trials):
     print("trial: ",t)
     if os.path.isfile("stop"):#"touch stop" to manually stop all jiggling.py processes
@@ -200,7 +202,6 @@ for t in range(num_trials):
     inp[(t % num_goals)].r = 1.0
 
     simulate(200)
-    #print("I swear I'm working!")
     np.save("lasttime.npy", time.time())   #update latest time
     inp.r = 0.0
     #hier:
@@ -210,7 +211,7 @@ for t in range(num_trials):
     
 
     output = rec['r'][-200:, -24:]
-
+    noises.append(rec["noise"])
     
     #hier:
     #plt.plot(rec['r'][:,12:19])
@@ -234,7 +235,6 @@ for t in range(num_trials):
                 np.concatenate((pcaarray,reco),axis=1)
                 pca = PCA(n_components=3)
             #if t>pcamin and t%num_goals<2 and t%(num_goals*14)<2:
-            
             
             
         if t>pcamin:
@@ -297,13 +297,14 @@ for t in range(num_trials):
     #wrecc=np.array(Wrec.w)
     #wrecc*=g_growth
     #Wrec.w=(wrecc).tolist()
+    rRhist_val=0
     if(t > 6*num_goals):
         # Apply the learning rule
         Wrec.learning_phase = 1.0
         Wrec.error = error
         Wrec.mean_error = R_mean[t % num_goals]
         Wrec.mean_mean_error = R_mean_mean[t % num_goals]
-        rRhist.append(Wrec.error-Wrec.mean_error)
+        rRhist_val=np.abs(Wrec.error-Wrec.mean_error)
         eta_lr=0.5
         #pop.A += -0.01-eta_lr*(Wrec.mean_error-Wrec.mean_mean_error)  #Wrec.effective_eta
         if pop.A<0:pop.A==0
@@ -316,6 +317,7 @@ for t in range(num_trials):
         Wrec.learning_phase = 0.0
         Wrec.trace = 0.0
         _ = m.get()
+    rRhist.append(rRhist_val)
 
 
     R_mean[t % num_goals] = alpha * R_mean[t %
@@ -330,6 +332,7 @@ for t in range(num_trials):
     #plt.scatter(t*np.ones(len(weightlist69[:220:11])),weightlist69[:220:11],s=4)
     etaf_history[t]= pop.A#Wrec.effective_eta#*(R_mean[t % num_goals]-R_mean_mean[t % num_goals])
     #print(R_mean[t % num_goals]-R_mean_mean[t % num_goals],Wrec.eta)  
+
 while True:
     try:
         content=np.load("paramfile.npy",allow_pickle=True)
@@ -363,11 +366,59 @@ etafh/=num_goals
 #print("length of each errorhistory: ", len(errh))
 
 #save file as the lowest free name (if some file is missing)
+def sliding_avg(array,alpha):
+    ret=[]
+    for i in range(np.shape(array)[0]-alpha):
+        ret.append(np.average(array[i:i+alpha],axis=0))
+    return np.array(ret)
 
-plt.plot(errh)
-#plt.plot(rRhist)
+print("shapes errh, rRhist",np.shape(error_history),np.shape(rRhist))
+
+#errh=sliding_avg(errh,5)
+#rRhist=sliding_avg(rRhist,5)
+
+
+np.save("noises.npy",{"noises":noises,"error_history":error_history})
+
+
+sys.exit()
+noisez=np.load("noises.npy",allow_pickle=True)
+noises=noisez.item().get("noises")
+errorhistory=noisez.item().get("error_history")
+pertcount=[]
+errdeltas=[]
+print(len(noises),len(errorhistory))
+for i in range(1,len(noises)):
+    pertim=noises[i]
+    pertim_bin=(pertim!=0)
+    pert_count=np.sum(pertim_bin)
+    pertcount.append(pert_count)
+    errdeltas.append(errorhistory[i]-errorhistory[i-1])
+plt.plot(pertcount);plt.plot(errdeltas);plt.show()
+counts, bins = np.histogram(pertcount)
+
+errarr=[]#this doesnt make any sense because errdeltas is pointless as there are 8 goals
+binz=np.copy(bins)
+binz[0]=-1
+binz[-1]=100900800
+for binnr in range(1,len(bins)):
+    errarrsmall=[]
+    for i in range(1,len(pertcount)):
+        if pertcount[i]<binz[binnr] and pertcount[i]>binz[binnr-1]:
+            errarrsmall.append(errdeltas[i])
+    if errarrsmall==[]:
+        errarr.append(-1)
+    else:
+        errarr.append(np.average(errarrsmall))
+#    err_weights.append()
+print(len(errarr),len(bins))
+plt.hist(bins[:-1], bins, weights=counts)
 plt.show()
 
+plt.plot(sliding_avg(error_history,5))
+plt.plot(sliding_avg(np.abs(rRhist),5))
+plt.show()
+#np.save("temporary/3_04_22_5000.npy",errh)
 sys.exit()
 for i in range(Nsims):
     #check if filename exists, if not: save under the missing name
