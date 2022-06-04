@@ -11,12 +11,7 @@ todo=content.item().get("todo")
 done=content.item().get("done")
 params=todo[0,-1]
 N=int(todo[0,3])
-print(str(todo[0,1]))
-print(str(todo[0,0]))
 
-etahere=1
-fhere=9
-Ahere=20
 
 neuron = Neuron(
     #hier
@@ -24,8 +19,8 @@ neuron = Neuron(
         tau = 30.0 : population # Time constant
         constant = 0.0 # The four first neurons have constant rates
         alpha = 0.05 : population # To compute the sliding mean 0.05
-        f = """+str(fhere)+""": population # Frequency of the perturbation 3/9
-        A = """+str(Ahere)+""": population # Perturbation amplitude. dt*A/tau should be 0.5... original=16/20
+        f = """+str(todo[0,1])+""": population # Frequency of the perturbation 3/9
+        A = """+str(22)+""": population # Perturbation amplitude. dt*A/tau should be 0.5... original=16/20
     """,
     equations="""
         # Perturbation
@@ -49,7 +44,7 @@ neuron = Neuron(
 #eta * trace * (mean_error) * (error - mean_error)
 synapse = Synapse(
     parameters="""
-        effective_eta = """+str(etahere)+""": projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
+        effective_eta = """+str(todo[0,2])+""": projection # Learning rate 0.5 -- 0.6 in icubs_bg/2
         learning_phase = 0.0 : projection # Flag to allow learning only at the end of a trial
         error = 0.0 : projection # Reward received
         mean_error = 0.0 : projection # Mean Reward received
@@ -108,7 +103,7 @@ Wi.connect_all_to_all(weights=Uniform(-0.2, 0.2))
 
 # Recurrent weights
 #hier
-g = 1.0 #1.0
+g = todo[0,0] #1.0
 Wrec = Projection(pop,pop,'exc',synapse)  #pop[0:(N-28)], pop, 'exc', synapse)
 #Wrec.connect_from_file(filename='Wrec.data')
 Wrec.connect_all_to_all(weights=Normal(0., g/np.sqrt(N)), allow_self_connections=True)

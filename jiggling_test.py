@@ -382,6 +382,17 @@ np.save("noises.npy",{"noises":noises,"error_history":error_history})
 
 
 sys.exit()
+####
+import numpy as np
+import matplotlib.pyplot as plt
+pert_delta=np.load("pert_delta.npy",allow_pickle=True)
+pertcount=pert_delta.item().get("pertcount")
+errdeltas=pert_delta.item().get("errdeltas")
+plt.hist(pertcount)
+plt.show()
+plt.plot(errdeltas)
+plt.show()
+###
 noisez=np.load("noises.npy",allow_pickle=True)
 noises=noisez.item().get("noises")
 errorhistory=noisez.item().get("error_history")

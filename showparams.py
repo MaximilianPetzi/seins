@@ -23,10 +23,13 @@ def sliding_avg(array,alpha):
         ret.append(np.average(array[i:i+alpha],axis=0))
     return np.array(ret)
 
-Bfolder="collection/coarse_grid/all/"
+Bfolder="collection/both_grid/all/"
+
+
+
 
 def get_cidx(par,Afolder):
-    print("______")
+    #print("______")
     fname=str(par[0])+"_"+str(par[1])+"_"+str(par[2])+"_"+str(par[3])
     #get error_data
     am=[]
@@ -34,7 +37,7 @@ def get_cidx(par,Afolder):
     for i in range(nrt):
         try:
             trackers = np.load(Bfolder+fname+"/"+str(i+1)+'error.npy')
-            if i==1:print(Bfolder+fname+"/"+str(i+1)+'error.npy')
+            #if i==1:print(Bfolder+fname+"/"+str(i+1)+'error.npy')
             #print("here:"+str(i+1)+'error.npy')
             t=trackers[0]
             am.append(t[:990])
@@ -58,7 +61,7 @@ def get_cidx(par,Afolder):
     minerror=np.min(sliding_avg(aAm,64))
     enderror=np.average(aAm[-20:])
     #convert into index
-    return (enderror)**1
+    return (minerror-enderr)**1
 
 Afolder="sA_20"   
 params=[]
@@ -67,9 +70,10 @@ for i in range(len(todo)):
     parr=todo[i]
     fname=str(parr[0])+"_"+str(parr[1])+"_"+str(parr[2])+"_"+str(parr[3])
     #print("dont append  ", "collection/"+Afolder+"/"+fname+"/1error.npy")
-    if os.path.isfile(Bfolder+"/"+fname+"/1error.npy") and parr[2]==3:# and parr[1]<1.5 and parr[0]<80:
+    if os.path.isfile(Bfolder+fname+"/1error.npy") and parr[0]<80 and parr[1]<1.5: #f<1.5
         params.append(parr)
-
+        print("yo")
+print("len of params=",len(params))
 params=np.array(params)
 
 fig = plt.figure()
@@ -84,8 +88,28 @@ if not colored:
     cidxs=1
     ppp=ax.scatter(params[:,0],params[:,1],params[:,2])
 if colored:
-    cidxs=[get_cidx(para,Afolder) for para in params]
-    ppp=ax.scatter(params[:,0],params[:,1],params[:,2],c=cidxs,cmap=cm.rainbow,vmin = 0, vmax =0.55)
+    cidxs=[]
+    params_sparse=[]
+    cidxs_sparse=[]
+
+    miner=100
+    minll=0
+    for l in range(len(params)):
+        cidxs.append(get_cidx(params[l],Afolder))
+        print(minll,cidxs[l],params[l])
+
+        if cidxs[l]<miner:miner=cidxs[l];minll=l
+        if cidxs[l]<10.1:
+            params_sparse.append(params[l])
+            cidxs_sparse.append(cidxs[l])
+    params_sparse=np.array(params_sparse)
+    print("miner =",miner, "at params =",params[minll])
+
+
+
+    #cidxs=[get_cidx(para,Afolder) for para in params]  #delete
+
+    ppp=ax.scatter(params_sparse[:,0],params_sparse[:,1],params_sparse[:,2],c=cidxs_sparse,cmap=cm.rainbow,vmin = 0, vmax =0.55)#vmax=0.20
     fig.colorbar(ppp)
 #ax.scatter(params[:,0]-2,params[:,1],params[:,2],color="green")
 #ax.scatter(params[:,0]-4,params[:,1],params[:,2],color="blue")

@@ -60,9 +60,10 @@ def get_cidx(par,Afolder):
     #convert into index
     return (enderror-minerror)**1
 
+
 deta_coarse=np.array([3,1,.3,.1,.02])
 deta_fine=np.array([6,.5,.01])
-deta_this=deta_coarse   #change this, line 26 and line 69/71
+deta_this=deta_coarse   #change this(, line 26) and line 69/71
 
 fig = plt.figure()
 
@@ -92,8 +93,8 @@ for detaidx in range(5):
         ppp=ax.scatter(params[:,0],params[:,1])
     if colored:
         cidxs=[get_cidx(para,Afolder) for para in params]
-        ppp=ax.scatter(params[:,0],params[:,1],c=cidxs,s=10,cmap=cm.rainbow)#,vmin = 0, vmax =0.55)
-        fig.colorbar(ppp)
+        ppp=ax.scatter(params[:,0],params[:,1],c=cidxs,s=10,cmap=cm.rainbow,vmin = 0, vmax =0.25)
+        fig.colorbar(ppp,label="instability")
 
     ax.set_xlabel('A')
     ax.set_ylabel('f')

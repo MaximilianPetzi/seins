@@ -11,6 +11,9 @@ dA_fine=np.array([42,28,18,10])
 df_fine=np.array([.15,.25,.7,2])
 deta_fine=np.array([6,.5,.01])
 
+dA_fine=np.array([1,1.005,1.01,1.02,1.06,1.15,1.3,1.5])#actually g
+df_fine=np.array([1])
+deta_fine=np.array([3])
 
 
 par_coarse=np.zeros((0,4))
@@ -33,8 +36,8 @@ for df_rest in (.15,.25,.4):
     for dA_rest in (60,90,150):
             par_rest=np.concatenate((par_rest,[[dA_rest,df_rest,.5,N_here]]),axis=0)
 
-
-par=np.concatenate((par_fine,par_coarse,par_rest),axis=0)
-content={"todo":par,"done":np.zeros((0,4))}
+#par=np.concatenate((par_fine,par_coarse,par_rest),axis=0)
+par=np.concatenate((par_fine,par_coarse),axis=0)
+content={"todo":par_fine,"done":np.zeros((0,4))}
 print("content=",content)
 np.save("paramfile.npy", content)
